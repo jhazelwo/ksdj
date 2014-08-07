@@ -1,5 +1,9 @@
 """
 
+Will very probably need FileAsObj
+    so this might be a good time to
+    do another rewrite of it.
+
 python 3.4
 django 1.7
 
@@ -25,6 +29,12 @@ tftp/01-{mac address}
 ks/etc/dhcpd.conf
 ks/etc/vlan_XX.conf
 
+Auth:
+    py3+ldap && a couple local backup accounts
+    though it kills me that i'd have to enforce
+    access controls for this project.
+    crazy suits.
+    For locals override username with lower(email)
 
 
 """
