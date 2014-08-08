@@ -1,7 +1,6 @@
 # core/tools.py
 
 from django.db import models
-from django.utils.encoding import smart_unicode
 
 class UltraModel(models.Model):
     """
@@ -18,5 +17,5 @@ class UltraModel(models.Model):
     class Meta:
         abstract = True
 
-    def __unicode__(self):
-        return smart_unicode(self.name)
+    def __str__(self):
+        return str(self.name)
