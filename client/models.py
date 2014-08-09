@@ -1,6 +1,8 @@
 from django.db import models
 from django.core.validators import RegexValidator
 
+from vlan.models import VLAN
+
 from core.tools import UltraModel
 
 class Client(UltraModel):
@@ -12,8 +14,8 @@ class Client(UltraModel):
     TYPE_CHOICES = (
         ('01',  'Application'),
         ('02',  'Web'),
-        ('03',   'Database'),
-        ('04', 'Corp'),
+        ('03',  'Database'),
+        ('04',  'Corp'),
     )
     build_type = models.CharField(
         max_length=2,
@@ -31,7 +33,7 @@ class Client(UltraModel):
     )
     #
     # netmask, server_ip and gateway come from vlan
-    #vlan = models.ForeignKey(VLAN, related_name='client')
+    vlan = models.ForeignKey(VLAN, related_name='client')
 
 
     class Meta:
