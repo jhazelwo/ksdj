@@ -1,3 +1,6 @@
+# client/admin.py
 from django.contrib import admin
 
-# Register your models here.
+from .models import VLAN
+admin.site.register(VLAN)
+

@@ -8,6 +8,10 @@ python 3.4
 django 1.7
 
 
+Really sick of screwing up plural/non-plural names; I know where it makes
+sense to add an 's'; but it burned so much typo/recompile time in the past
+I'm just going to make everything singular going forward.
+
 
 
 ks/etc/hosts

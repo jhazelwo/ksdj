@@ -8,9 +8,9 @@ from core.tools import UltraModel
 class Client(UltraModel):
     """
     """
-    name = models.CharField(validators=[RegexValidator('^[a-zA-Z0-9\.\-\_]+$')], max_length=32) # Hostname
-    mac = models.CharField(validators=[RegexValidator('^([a-gA-G0-9]{2}[:-]){5}([a-gA-G0-9]){2}$')], max_length=17) # MAC Address
-    ip = models.CharField(validators=[RegexValidator('^((\d){1,3}.){3}(\d){1,3}$')], max_length=15)
+    name = models.CharField(validators=[RegexValidator('^[a-zA-Z0-9\.\-\_]+$')], max_length=32, unique=True) # Hostname
+    mac = models.CharField(validators=[RegexValidator('^([a-gA-G0-9]{2}[:-]){5}([a-gA-G0-9]){2}$')], max_length=17, unique=True) # MAC Address
+    ip = models.CharField(validators=[RegexValidator('^((\d){1,3}.){3}(\d){1,3}$')], max_length=15, unique=True)
     TYPE_CHOICES = (
         ('01',  'Application'),
         ('02',  'Web'),
@@ -35,10 +35,6 @@ class Client(UltraModel):
     # netmask, server_ip and gateway come from vlan
     vlan = models.ForeignKey(VLAN, related_name='client')
 
-
-    class Meta:
-        unique_together = (("name", "mac"),)
-
     def get_absolute_url(self):
         return reverse('client:detail', kwargs={'pk': self.id})
 
@@ -46,3 +42,4 @@ class Client(UltraModel):
         """Force hostnames to be lowercase"""
         self.name = self.name.lower()
         super(Client, self).save(*args, **kwargs)
+

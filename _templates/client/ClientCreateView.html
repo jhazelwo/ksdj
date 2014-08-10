@@ -1,0 +1,17 @@
+{% extends "Root.html" %}
+
+{% block dashboardtitle %}Add a system to kickstart{% endblock %}
+
+{% block content %}
+
+
+{% if form.vlan %}
+    <form action="" method="post">{{ form.as_p }}<input type="submit" class="btn btn-sm btn-info" value="Add!" />{% csrf_token %}</form>
+{% else %}
+    <div class="alert alert-danger" role="alert">Warning! There are no VLANs defined! <br> Please <a href="">add a VLAN to Kickstart</a> before adding a client.</div>
+{% endif %}
+
+{% endblock content %}
+
+
+
