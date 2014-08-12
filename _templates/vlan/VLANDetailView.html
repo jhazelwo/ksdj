@@ -1,0 +1,49 @@
+{% extends "Root.html" %}
+
+{% block VLANCreateView %} class="active"{% endblock %}
+
+{% block dashboardtitle %}{% endblock %}
+
+{% block content %}
+<div class="col-sm-4">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">VLAN Detail </h3>
+        </div>
+        <div class="panel-body">
+                <table class="table table-striped table-responsive table-condensed ">
+                    <tr><td class="text-right"><strong>VLAN Number:</strong></td><td>{{ object.name }}</td></tr>
+                    <tr><td class="text-right"><strong>Network / CIDR:</strong></td><td> {{ object.network }} / {{ object.get_cidr_display }}</td></tr>
+                    <tr><td class="text-right"><strong>Gateway:</strong></td><td> {{ object.gateway }}</td></tr>
+                    <tr><td class="text-right"><strong>Kickstart Server IP</strong></td><td> {{ object.server_ip }}</em></td></tr>
+                    <tr><td colspan=2><h4>Notes:</h4>{{ object.notes }}</td></tr>
+                    <tr><td colspan=2><a href="{% url 'vlan:update' pk=object.id %}" class="btn btn-md btn-info">Edit</a></td></tr>
+                </table>
+        </div>
+    </div>
+</div>
+<div class="col-sm-2">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">CIDR to QuadDot</h3>
+        </div>
+        <div class="panel-body">
+            <table class="table table-striped table-responsive table-condensed ">
+                <tr><td>/28 </td><td> 255.255.255.240</td></tr>
+                <tr><td>/27 </td><td> 255.255.255.224</td></tr>
+                <tr><td>/26 </td><td> 255.255.255.192</td></tr>
+                <tr><td>/25 </td><td> 255.255.255.128</td></tr>
+                <tr><td>/24 </td><td> 255.255.255.0</td></tr>
+                <tr><td>/23 </td><td> 255.255.254.0</td></tr>
+                <tr><td>/22 </td><td> 255.255.252.0</td></tr>
+                <tr><td>/21 </td><td>255.255.248.0</td></tr>
+                <tr><td>/20 </td><td>255.255.240.0</td></tr>
+                <tr><td>/19 </td><td>255.255.224.0</td></tr>
+                <tr><td>/18 </td><td>255.255.192.0</td></tr>
+                <tr><td>/17 </td><td>255.255.128.0</td></tr>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+

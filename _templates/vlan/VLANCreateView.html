@@ -1,36 +1,50 @@
 {% extends "Root.html" %}
 
-{% block dashboardtitle %}Add a VLAN to kickstart{% endblock %}
+{% block VLANCreateView %} class="active"{% endblock %}
+
+{% block dashboardtitle %}Add a VLAN to Kickstart{% endblock %}
 
 {% block content %}
-<form action="" method="post">
-    <strong>VLAN Number/Name:</strong> {{ form.name }}{{ form.name.errors }}<br>
-    <strong>Network:</strong> {{ form.network }} <em>ex: "192.168.1.0"</em> {{ form.network.errors }}<br>
-    <strong>gateway:</strong> {{ form.gateway }} <em>Leave empty to just use lowest host.</em> {{ form.gateway.errors }}<br>
+<div class="col-sm-6">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Add a VLAN to Kickstart</h3>
+        </div>
+        <div class="panel-body">
+            <form action="" method="post">
+                <table class="table table-striped table-responsive table-condensed ">
+                    <tr><td class="text-right"><strong>VLAN Number:</strong></td><td>{{ form.name }} <em>1 to 9999</em> {{ form.name.errors }}</td></tr>
+                    <tr><td class="text-right"><strong>Network / CIDR:</strong></td><td> {{ form.network }} / {{ form.cidr }} <em>ex: "192.168.1.0 / 24"</em> {{ form.network.errors }}{{ form.cidr.errors }}</td></tr>
+                    <tr><td class="text-right"><strong>Gateway:</strong></td><td> {{ form.gateway }} <em>Leave empty to just use lowest host.</em> {{ form.gateway.errors }}</td></tr>
+                    <tr><td class="text-right"><strong>Kickstart Server IP</strong></td><td> {{ form.server_ip }} <em>(The IP that the kickstart server will use, not the client IP){{ form.server_ip.errors }}</em></td></tr>
+                    <tr><td colspan=2><h4>Notes:</h4>{{ form.notes }}</td></tr>
+                    <tr><td colspan=2><input type="submit" class="btn btn-sm btn-success" value="Add!" />{% csrf_token %}</td></tr>
+                </table>
+            </form>
+        </div>
+    </div>
+</div>
 <div class="col-sm-2">
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h3 class="panel-title">Netmask{{ form.cidr.errors }}</h3>
+            <h3 class="panel-title">CIDR to QuadDot</h3>
         </div>
         <div class="panel-body">
             <table class="table table-striped table-responsive table-condensed ">
-            <tr><td>/28 </td><td><label for="id_cidr_0"><input id="id_cidr_0" name="cidr" type="radio" value="28" /> 255.255.255.240</label></td></tr>
-            <tr><td>/27 </td><td><label for="id_cidr_1"><input id="id_cidr_1" name="cidr" type="radio" value="27" /> 255.255.255.224</label></td></tr>
-            <tr><td>/26 </td><td><label for="id_cidr_2"><input id="id_cidr_2" name="cidr" type="radio" value="26" /> 255.255.255.192</label></td></tr>
-            <tr><td>/25 </td><td><label for="id_cidr_3"><input id="id_cidr_3" name="cidr" type="radio" value="25" /> 255.255.255.128</label></td></tr>
-            <tr><td>/24 </td><td><label for="id_cidr_4"><input id="id_cidr_4" name="cidr" type="radio" value="24" /> 255.255.255.0</label></td></tr>
-            <tr><td>/23 </td><td><label for="id_cidr_5"><input id="id_cidr_5" name="cidr" type="radio" value="23" /> 255.255.254.0</label></td></tr>
-            <tr><td>/22 </td><td><label for="id_cidr_6"><input id="id_cidr_6" name="cidr" type="radio" value="22" /> 255.255.252.0</label></td></tr>
-            <tr><td>/21 </td><td><label for="id_cidr_7"><input id="id_cidr_7" name="cidr" type="radio" value="21" /> 255.255.248.0</label></td></tr>
-            <tr><td>/20 </td><td><label for="id_cidr_8"><input id="id_cidr_8" name="cidr" type="radio" value="20" /> 255.255.240.0</label></td></tr>
-            <tr><td>/19 </td><td><label for="id_cidr_9"><input id="id_cidr_9" name="cidr" type="radio" value="19" /> 255.255.224.0</label></td></tr>
-            <tr><td>/18 </td><td><label for="id_cidr_10"><input id="id_cidr_10" name="cidr" type="radio" value="18" /> 255.255.192.0</label></td></tr>
-            <tr><td>/17 </td><td><label for="id_cidr_11"><input id="id_cidr_11" name="cidr" type="radio" value="17" /> 255.255.128.0</label></td></tr>
+                <tr><td>/28 </td><td> 255.255.255.240</td></tr>
+                <tr><td>/27 </td><td> 255.255.255.224</td></tr>
+                <tr><td>/26 </td><td> 255.255.255.192</td></tr>
+                <tr><td>/25 </td><td> 255.255.255.128</td></tr>
+                <tr><td>/24 </td><td> 255.255.255.0</td></tr>
+                <tr><td>/23 </td><td> 255.255.254.0</td></tr>
+                <tr><td>/22 </td><td> 255.255.252.0</td></tr>
+                <tr><td>/21 </td><td>255.255.248.0</td></tr>
+                <tr><td>/20 </td><td>255.255.240.0</td></tr>
+                <tr><td>/19 </td><td>255.255.224.0</td></tr>
+                <tr><td>/18 </td><td>255.255.192.0</td></tr>
+                <tr><td>/17 </td><td>255.255.128.0</td></tr>
             </table>
         </div>
     </div>
-    Kickstart Server IP {{ form.server_ip }} <br>
-    <em>(The IP that the kickstart server will use, not the client IP){{ form.server_ip.errors }}</em><br>
-    <input type="submit" class="btn btn-sm btn-info" value="Add!" />{% csrf_token %}</form>
 </div>
 {% endblock content %}

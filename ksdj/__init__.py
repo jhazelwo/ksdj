@@ -17,7 +17,7 @@ Really sick of screwing up plural/non-plural names; I know where it makes sense 
 
 
 core/skel.py
-    None of that is going to work the way I want but it's in place now so I can fix it up when I get to that phase.
+    This is coming along nicely, but we've just about hit the "this doesn't scale" wall. I expect a big re-eng very soon.
 
 ks/etc/hosts
 ks/etc/hosts.allow

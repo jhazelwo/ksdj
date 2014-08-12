@@ -12,12 +12,14 @@ class VLANForm(ModelForm):
             'gateway',
             'cidr',
             'server_ip',
+            'notes',
         )
         model = models.VLAN
-        widgets = {
-            'cidr' : RadioSelect(),
-        }
 
     def __init__(self, *args, **kwargs):
         super(VLANForm, self).__init__(*args, **kwargs)
-        self.fields['cidr'].empty_label = None
+        self.fields['name'].widget.attrs['size'] = 8
+        self.fields['notes'].widget.attrs['rows'] = 2
+        self.fields['notes'].widget.attrs['cols'] = 64
+
+

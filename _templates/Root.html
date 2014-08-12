@@ -56,12 +56,12 @@
       <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
           <ul class="nav nav-sidebar">
-            <li class="active"><a href="#">Kickstart Clients</a></li>
-            <li><a href="#">Add a system to kickstart</a></li>
+            <li><a href="#">Kickstart Clients</a></li>
+            <li{% block ClientCreateView %}{% endblock %}><a href="{% url 'client:create' %}">Add a system to kickstart</a></li>
           </ul>
           <ul class="nav nav-sidebar">
             <li><a href="">Kickstart VLANs</a></li>
-            <li><a href="">Add a VLAN to kickstart</a></li>
+            <li{% block VLANCreateView %}{% endblock %}><a href="{% url 'vlan:create' %}">Add a VLAN to kickstart</a></li>
           </ul>
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
