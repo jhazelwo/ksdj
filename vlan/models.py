@@ -10,6 +10,7 @@ class VLAN(UltraModel):
     network = models.CharField(validators=[RegexValidator('^((\d){1,3}.){3}(\d){1,3}$')], max_length=15, unique=True)
     server_ip = models.CharField(validators=[RegexValidator('^((\d){1,3}.){3}(\d){1,3}$')], max_length=15, unique=True)
     CIDR_CHOICES = (
+        ('', ' '),
         ('255.255.255.240', '28'),
         ('255.255.255.224', '27'),
         ('255.255.255.192', '26'),
@@ -28,8 +29,7 @@ class VLAN(UltraModel):
         choices=CIDR_CHOICES,
     )
     # semi-optional, if left blank VLANCreateView will set it to Network.host_first (lowhost)
-    gateway = models.CharField(validators=[RegexValidator('^((\d){1,3}.){3}(\d){1,3}$')], max_length=15, blank=True, null=True, unique=True)
+    gateway = models.CharField(validators=[RegexValidator('^((\d){1,3}.){3}(\d){1,3}$')], max_length=15, blank=True, null=False, unique=True)
 
     def get_absolute_url(self):
         return reverse('vlan:detail', kwargs={'pk' : self.id})
-    

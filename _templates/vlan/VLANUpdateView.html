@@ -2,13 +2,13 @@
 
 {% block VLANCreateView %} class="active"{% endblock %}
 
-{% block dashboardtitle %}Add a VLAN to Kickstart{% endblock %}
+{% block dashboardtitle %}Edit a Kickstart VLAN{% endblock %}
 
 {% block content %}
 <div class="col-sm-6">
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h3 class="panel-title">Add a VLAN to Kickstart</h3>
+            <h3 class="panel-title"> </h3>
         </div>
         <div class="panel-body">
             <form action="" method="post">
@@ -18,7 +18,7 @@
                     <tr><td class="text-right"><strong>Gateway:</strong></td><td> {{ form.gateway }} <em>Leave empty to just use lowest host.</em> {{ form.gateway.errors }}</td></tr>
                     <tr><td class="text-right"><strong>Kickstart Server IP</strong></td><td> {{ form.server_ip }} <em>(The IP that the kickstart server will use, not the client IP){{ form.server_ip.errors }}</em></td></tr>
                     <tr><td colspan=2><h4>Notes:</h4>{{ form.notes }}</td></tr>
-                    <tr><td colspan=2><input type="submit" class="btn btn-sm btn-success" value="Save Changes!" />{% csrf_token %}</td></tr>
+                    <tr><td colspan=2 class="text-right"><input type="submit" class="btn btn-sm btn-success" value="Save Changes!" />{% csrf_token %}</td></tr>
                 </table>
             </form>
         </div>

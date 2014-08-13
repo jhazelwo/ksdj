@@ -9,8 +9,8 @@ class VLANForm(ModelForm):
         fields = (
             'name',
             'network',
-            'gateway',
             'cidr',
+            'gateway',
             'server_ip',
             'notes',
         )
@@ -21,5 +21,3 @@ class VLANForm(ModelForm):
         self.fields['name'].widget.attrs['size'] = 8
         self.fields['notes'].widget.attrs['rows'] = 2
         self.fields['notes'].widget.attrs['cols'] = 64
-
-

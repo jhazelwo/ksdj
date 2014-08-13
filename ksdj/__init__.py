@@ -15,9 +15,9 @@
 
 Really sick of screwing up plural/non-plural names; I know where it makes sense to add an 's'; but it burned so much typo/recompile time in the past I'm just going to make everything singular going forward.
 
-
-core/skel.py
-    This is coming along nicely, but we've just about hit the "this doesn't scale" wall. I expect a big re-eng very soon.
+core/kickstart.py
+    client_create
+        if DNS returns a client IP that is already in use we fail in an ugly way, fix it.
 
 ks/etc/hosts
 ks/etc/hosts.allow

@@ -13,12 +13,16 @@ class ClientForm(ModelForm):
             'build_type',
             'os_release',
             'vlan',
+            'notes',
             )
         model = models.Client
         widgets = {
-            'vlan' : RadioSelect(),
+            'build_type' : RadioSelect(),
+            'os_release' : RadioSelect(),
         }
 
     def __init__(self, *args, **kwargs):
         super(ClientForm, self).__init__(*args, **kwargs)
-        self.fields['vlan'].empty_label = None
+        self.fields['vlan'].empty_label = '<auto-detect>'
+        self.fields['notes'].widget.attrs['rows'] = 2
+        self.fields['notes'].widget.attrs['cols'] = 64

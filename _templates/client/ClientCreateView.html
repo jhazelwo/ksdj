@@ -5,15 +5,55 @@
 {% block dashboardtitle %}Add a system to kickstart{% endblock %}
 
 {% block content %}
-
-
 {% if form.vlan %}
-    <form action="" method="post">{{ form.as_p }}<input type="submit" class="btn btn-sm btn-info" value="Add!" />{% csrf_token %}</form>
+    <div class="col-sm-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title"> </h3>
+            </div>
+            <div class="panel-body">
+                <form action="" method="post">
+                    <table class="table table-striped table-responsive table-condensed ">
+                        <tr><td class="text-right"><strong>hostname:</strong></td><td>{{ form.name }}{{ form.name.errors }}</td></tr>
+                        <tr><td class="text-right"><strong>MAC Address:</strong></td><td> {{ form.mac }} {{ form.mac.errors }}</td></tr>
+                        <tr><td class="text-right"><strong>IP:</strong></td><td> {{ form.ip }} <em>Leave empty to get IP from DNS.</em> {{ form.ip.errors }}</td></tr>
+                        <tr><td class="text-right"><strong>VLAN</strong></td><td> {{ form.vlan }}{{ form.vlan.errors }}</td></tr>
+                        <tr>
+                            <td class="text-left">
+                                <strong>Build Type</strong><br>
+                                {{ form.build_type }}{{ form.build_type.errors }}
+                            </td>
+                            <td>
+                                <strong>OS Release</strong><br>
+                                {{ form.os_release }}{{ form.os_release.errors }}
+                            </td>
+                        </tr>
+                        <tr><td colspan=2><h4>Notes:</h4>{{ form.notes }}</td></tr>
+                        <tr><td colspan=2 class="text-right"><input type="submit" class="btn btn-sm btn-success" value="Add!" />{% csrf_token %}</td></tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+    </div>
+<div class="col-sm-2">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Available VLANs</h3>
+        </div>
+        <div class="panel-body">
+            <table class="table table-striped table-responsive table-condensed ">
+                <thead><tr><th>VLAN #</th><th>Network/CIDR</th></tr></thead>
+                <tbody>
+                {% for this in vlans %}
+                    <tr><td>{{ this.name }}</td><td>{{ this.network }}/{{ this.get_cidr_display}}</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 {% else %}
     <div class="alert alert-danger" role="alert">Warning! There are no VLANs defined! <br> Please <a href="{% url 'vlan:create' %}">add a VLAN to Kickstart</a> before adding a client.</div>
 {% endif %}
-
 {% endblock content %}
-
-
-
