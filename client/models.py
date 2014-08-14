@@ -25,11 +25,11 @@ class Client(UltraModel):
         default=None
     )
     OS_CHOICES = (
-        ('01',  'el6'),
-        ('02',  'el5'),
+        ('el6',  'Ent Linux 6'),
+        ('el5',  'Ent Linux 5'),
     )
     os_release = models.CharField(
-        max_length=2,
+        max_length=3,
         choices=OS_CHOICES,
         #default=OS_CHOICES[0][0]
         default=None
@@ -44,5 +44,6 @@ class Client(UltraModel):
     def save(self, *args, **kwargs):
         """Force hostnames to be lowercase"""
         self.name = self.name.lower()
+        self.mac = self.mac.lower()
         super(Client, self).save(*args, **kwargs)
 

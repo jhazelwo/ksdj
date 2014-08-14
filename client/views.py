@@ -11,7 +11,7 @@ from .forms import ClientForm
 from .models import Client
 
 
-class Index(generic.TemplateView):
+class Index(generic.ListView):
     """ default /client/ view """
     form_class, model = ClientForm, Client
     template_name = 'client/index.html'
