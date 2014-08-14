@@ -14,7 +14,8 @@
                 <table class="table table-striped table-responsive table-condensed ">
                     <tr><td class="text-right"><strong>Hostname:</strong></td><td>{{ object.name }}</td></tr>
                     <tr><td class="text-right"><strong>MAC Address:</strong></td><td> {{ object.mac }}</td></tr>
-                    <tr><td class="text-right"><strong>IP / VLAN:</strong></td><td> {{ object.ip }} / {{ object.vlan }}</td></tr>
+                    <tr><td class="text-right"><strong>IP / CIDR:</strong></td><td> {{ object.ip }} / {{ object.vlan.get_cidr_display }}</td></tr>
+                    <tr><td class="text-right"><strong>VLAN</strong></td><td> {{ object.vlan }}</td></tr>
                     <tr><td class="text-right"><strong>Build Type</strong></td><td> {{ object.get_build_type_display }}</td></tr>
                     <tr><td class="text-right"><strong>OS</strong></td><td> {{ object.get_os_release_display }}</td></tr>
                     <tr><td colspan=2><h4>Notes:</h4>{{ object.notes|linebreaksbr }}</td></tr>
@@ -24,4 +25,3 @@
     </div>
 </div>
 {% endblock content %}
-

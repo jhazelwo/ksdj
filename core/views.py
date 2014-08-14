@@ -10,7 +10,7 @@ from .forms import LoginForm
 
 class Index(generic.TemplateView):
     """  """
-    template_name = 'Root.html'
+    template_name = 'core/index.html'
 
 
 class LoginFormView(generic.FormView):

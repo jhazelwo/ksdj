@@ -181,6 +181,7 @@ def client_create(s,form):
     """
     1. Get IP if Null
     2. Figure out VLAN from IP
+    2a. make sure IP is valid for VLAN
     3. unqie add to etc/hosts
     4. unqie add to etc/hosts.allow
     5. unqie add client in pxe_clients.conf
@@ -213,6 +214,10 @@ def client_create(s,form):
                 form.instance.vlan = thisv
     if not form.instance.vlan:
         messages.warning(s.request, 'IP %s not valid for any known vlans. Please check address and/or add needed VLAN.' % form.instance.ip)
+        return False
+    
+    if form.instance.ip not in ipcalc.Network('%s/%s' % (form.instance.vlan.network,form.instance.vlan.get_cidr_display())):
+        messages.warning(s.request, 'IP %s not valid VLAN %s. Please check address and/or add needed VLAN.' % (form.instance.ip,form.instance.vlan))
         return False
     #
     # etc/hosts
