@@ -3,121 +3,31 @@ import os
 import time
 from socket import gethostbyname
 from django.contrib import messages
-
-from .fileasobj import FileAsObj
-# https://github.com/tehmaze/ipcalc (ported to py3)
-from core import ipcalc
-
 from vlan.models import VLAN
 
-# Really tempted to move all of these variables back to core/settings.py
-from ksdj.settings import ks_root_password, ks_nameservers, ks_domainname
+# https://github.com/tehmaze/ipcalc (ported to py3)
+from . import ipcalc
+# https://github.com/nullpass/npnutils/blob/master/fileasobj.py
+from .fileasobj import FileAsObj
+# base templates for files we create
+from .skel import base_ks, base_sh, base_tftp
 
-# Kickstart config-file root
-KSROOT = os.path.join(os.sep,'opt','kickstart','etc')
+# Since we cannot include the real settings.py on github
+# I have added examples for what these variables might be
+from .settings import ks_root_password  # 'password'
+from .settings import ks_nameservers    # '10.0.0.10,8.8.8.8'
+from .settings import ks_domainname     # 'mycompany.tld'
 
-# equiv of /opt/tftpboot/pxelinux.cfg/ 
-# where we put grub menus for pxe clients named by mac address
-TFTP = KSROOT
+from .settings import KSROOT        # /opt/kickstart/etc
+from .settings import KS_CONF_DIR   # KSROOT, ks.d
+from .settings import CLIENT_DIR    # KSROOT, clients.d
+from .settings import TFTP          # /opt/tftpboot/pxelinux.cfg
 
-# equiv of /opt/kickstart/etc/clients.d
-# Where we write the hostname.sh files that contain client variables
-CLIENT_DIR = KSROOT
+from .settings import etc_hosts             # KSROOT, hosts
+from .settings import etc_hosts_allow       # KSROOT, hosts.allow
+from .settings import etc_pxe_clients_conf  # KSROOT, pxe_clients.conf
 
-# equiv of /opt/kickstart/etc/ks.d
-# Kickstart config files saved here, named by hostname.
-KS_CONF_DIR = KSROOT
 
-# equiv of /etc/hosts
-etc_hosts = os.path.join(KSROOT,'hosts.txt')
-
-# equiv of /etc/hosts.allow (if you use tcpwrappers)
-etc_hosts_allow = os.path.join(KSROOT,'hosts.allow.txt')
-
-# Where we tell DHCPD about the kickstart clients
-etc_pxe_clients_conf = os.path.join(KSROOT,'pxe_clients.conf')
-
-# Base kickstart config, please keep this as short as possible
-# and as agnostic as possible. Put rel differences in post-build
-# scripts or kickstart.py
-base_ks = """#
-install
-text
-nfs --server={SERVER_IP} --dir=/opt/kickstart/install/{OS_RELEASE}
-network --onboot yes --bootproto static --ip {CLIENT_IP} --netmask {QUAD_MASK} --gateway {GATEWAY} --noipv6 --nameserver {NAME_SERVERS} --hostname {HOSTNAME}
-reboot
-lang en_US.UTF-8
-keyboard us
-rootpw {ROOT_PW}
-firewall --disabled
-authconfig --enableshadow --passalgo=sha512
-firstboot --disabled
-selinux --disabled
-timezone --utc UTC
-skipx
-zerombr
-
-%include /tmp/partout
-
-services --disabled=rdisc
-
-%packages
-@Base
-@Core
-
-%pre
-#!/bin/bash
-thisDrive="`ls -ld /sys/block/sd*|grep -v usb|sort|head -1|awk -F/ '{{print $4}}'|awk '{{print $1}}'`"
-cat << EOF >> /tmp/partout
-clearpart --all --drives=${{thisDrive}} --initlabel
-part /boot --fstype={EXT34} --asprimary --size=512 --ondisk=${{thisDrive}}
-bootloader --location=mbr --driveorder=${{thisDrive}} --append="biosdevname=0 numa=off"
-part swap --fstype=swap     --size=32768           --ondisk=${{thisDrive}}
-part /    --fstype={EXT34}  --size=1 --grow        --ondisk=${{thisDrive}}
-EOF
-%end
-
-%post --log=/root/post.log
-#!/bin/bash
-#
-mkdir /root/ks
-mount -t nfs -o ro,intr,nolock,vers=3 {SERVER_IP}:/opt/kickstart/ /root/ks/
-cp -v /root/ks/etc/clients.d/{HOSTNAME}.sh /root/kickstart.source || exit $?
-/root/ks/bin/build.d/00-fover.sh || exit $?
-/root/ks/bin/build.d/10-lockdown.sh || exit $?
-/root/ks/bin/build.d/70-bond.sh || exit $?
-/root/ks/bin/build.d/80-byapp.sh || exit $?
-/root/ks/bin/build.d/90-netbackup.sh || exit $?
-%end
-"""
-
-#
-# clients.d/hostname.sh -- shell variables that the post-build scripts use
-base_sh = """CLIENT_HOSTNAME="{HOSTNAME}"
-CLIENT_MAC="{MAC}"
-CLIENT_IPADDR="{CLIENT_IP}"
-CLIENT_NETMASK="{QUAD_MASK}"
-CLIENT_GATEWAY="{GATEWAY}"
-CLIENT_TYPE="{BUILD_TYPE}"
-CLIENT_OS="{OS_RELEASE}"
-SERVER_IPADDR="{SERVER_IP}"
-"""
-
-base_tftp = """default menu.c32
-prompt 0
-timeout 32
-ONTIMEOUT Kickstart
-
-MENU TITLE PXE Menu
-
-LABEL Kickstart
-    MENU LABEL Kickstart Install - {HOSTNAME} {OS_RELEASE}
-    menu default
-    KERNEL images/{OS_RELEASE}/vmlinuz
-    IPAPPEND 2
-    APPEND initrd=images/{OS_RELEASE}/initrd.img ramdisk_size=10000 ks=nfs:{SERVER_IP}:{KS_ROOT}/{HOSTNAME}.ks ksdevice=bootif
-
-"""
 
 def vlan_create(s, form):
     """
@@ -130,34 +40,46 @@ def vlan_create(s, form):
     
     If there is a problem generate an error and return False 
     """
-    n = form.cleaned_data['network']
-    c = form.cleaned_data['cidr']
-    i = form.cleaned_data['server_ip']
-    netinfo = ipcalc.Network('%s/%s' % (n,c))
-    if i not in netinfo:
-        messages.warning(s.request, 'IP address %s is not inside network %s/%s!' % (i,n,c))
+    network = form.cleaned_data['network']
+    cidr = form.cleaned_data['cidr']
+    server_ip = form.cleaned_data['server_ip']
+    vlanname = form.cleaned_data['name']
+    #
+    try:
+        netinfo = ipcalc.Network('%s/%s' % (network,cidr))
+    except Exception as e:
+        messages.error(s.request, 'Failed to determine network information from data provided. - %s' % e, extra_tags='danger')
         return False
+    #
+    if server_ip not in netinfo:
+        messages.warning(s.request, 'IP address %s is not inside network %s/%s!' % (server_ip,network,cidr))
+        return False
+    #
+    # Set gateway
     if not form.cleaned_data['gateway']:
         form.instance.gateway = netinfo.host_first()
+    gateway = form.instance.gateway
     #
+    # KSROOT, dhcpd.conf
     dhcpd_conf = FileAsObj(os.path.join(KSROOT, 'dhcpd.conf'))
     if dhcpd_conf.Errors:
-        messages.error(s.request, 'Failed to update dhcpd.conf Have the Kickstart admin check logs.', extra_tags='danger')
-        print(dhcpd_conf.Trace)
+        messages.error(s.request, dhcpd_conf.Trace, extra_tags='danger')
         return False
-    dhcpd_conf.add('include "%s%svlan_%s.conf";' % (os.path.join(KSROOT), os.sep, form.cleaned_data['name']))
+    dhcpd_conf.add('include "%s/vlan_%s.conf";' % (KSROOT, vlanname))
     #
-    fname = os.path.join(KSROOT, 'vlan_%s.conf' % form.cleaned_data['name'])
+    # KSROOT, vlan_XX.conf
+    fname = os.path.join(KSROOT, 'vlan_%s.conf' % vlanname)
     if os.path.isfile(fname):
-        messages.error(s.request, 'Failed to add VLAN config. The file "vlan_%s.conf" already exists!' % form.cleaned_data['name'], extra_tags='danger')
+        messages.error(s.request, 'Failed to add VLAN config. The file "vlan_%s.conf" already exists!' % vlanname, extra_tags='danger')
         return False
     vlan_conf = FileAsObj(fname)
     vlan_conf.contents = []
     vlan_conf.add('#')
-    vlan_conf.add('subnet %s netmask %s {' % ( form.cleaned_data['network'], form.cleaned_data['cidr'] ) )
+    vlan_conf.add('subnet %s netmask %s {' % ( network, cidr ) )
     vlan_conf.add('    authoritative;')
-    vlan_conf.add('    option routers %s;' % form.instance.gateway)
-    vlan_conf.add('    next-server %s;' % form.cleaned_data['server_ip'])
+    vlan_conf.add('    option routers %s;' % gateway)
+    vlan_conf.add('    next-server %s;' % server_ip)
+    #
     # All is OK, save changes
     dhcpd_conf.write()
     vlan_conf.write()
@@ -194,18 +116,19 @@ def client_create(s,form):
     hostname = form.cleaned_data['name'].lower()
     mac_addr = form.cleaned_data['mac'].lower()
     build_type = form.instance.get_build_type_display().lower()
+    os_release = form.cleaned_data['os_release']
     #
     # We use ext4 by default, if it's a EL5.x build we use ext3.
-    use_ext = 'ext4'
+    fstype = 'ext4'
     if form.cleaned_data['os_release'] == 'el5':
-        use_ext = 'ext3'
+        fstype = 'ext3'
     #
     #
     if not form.cleaned_data['ip']:
         try:
             form.instance.ip = gethostbyname(hostname)
         except Exception as e:
-            messages.warning(s.request, 'DNS lookup failed for "%s". Please correct hostname, update DNS, or specify IP. - %s' % (form.cleaned_data['name'],e))
+            messages.warning(s.request, 'DNS lookup failed for "%s". Please correct hostname, update DNS, or specify IP. - %s' % (hostname,e))
             return False
     if not form.cleaned_data['vlan']:
         for thisv in VLAN.objects.all():
@@ -254,7 +177,7 @@ def client_create(s,form):
     Unique add host, don't use verbose mode- and add "}" at the end of the file.
     """
     pxeconf = FileAsObj(etc_pxe_clients_conf)
-    if pxeconf.grep(' %s.%s ' % (hostname,ks_domainname) ):
+    if pxeconf.grep(' %s.%s ' % (hostname, ks_domainname) ):
         messages.error(s.request, 'Failed to update %s, host "%s" already present!' % (etc_pxe_clients_conf,hostname), extra_tags='danger')
         return False
     toadd = 'host {HOSTNAME}.{DOMAINNAME} {{ hardware ethernet {MAC} ; fixed-address {HOSTNAME}.{DOMAINNAME} ;}}'.format(
@@ -266,7 +189,7 @@ def client_create(s,form):
     pxeconf.add('}')
     #
     # tftpboot/pxe.default/01-mac-address.lower().replace(":","-")
-    dashmac = '-'.join(form.cleaned_data['mac'].split(":"))
+    dashmac = '-'.join(mac_addr.split(":"))
     dashmac = '01-{}'.format(dashmac)
     fname = os.path.join(TFTP,dashmac)
     if os.path.isfile(fname):
@@ -275,7 +198,7 @@ def client_create(s,form):
     tftp_pxe = FileAsObj(fname)
     tftp_pxe.contents = base_tftp.format(
         KS_ROOT=KSROOT,
-        OS_RELEASE=form.cleaned_data['os_release'],
+        OS_RELEASE=os_release,
         HOSTNAME=hostname,
         SERVER_IP=form.instance.vlan.server_ip,
     ).split("\n")
@@ -288,11 +211,11 @@ def client_create(s,form):
     hostname_ks = FileAsObj(fname)
     hostname_ks.contents = base_ks.format(
         CLIENT_IP=form.instance.ip,
-        OS_RELEASE=form.cleaned_data['os_release'],
+        OS_RELEASE=os_release,
         QUAD_MASK=form.instance.vlan.cidr,
         GATEWAY=form.instance.vlan.gateway,
         HOSTNAME=hostname,
-        EXT34=use_ext,
+        EXT34=fstype,
         SERVER_IP=form.instance.vlan.server_ip,
         ROOT_PW=ks_root_password,
         NAME_SERVERS=ks_nameservers,
@@ -311,7 +234,7 @@ def client_create(s,form):
         QUAD_MASK=form.instance.vlan.cidr,
         GATEWAY=form.instance.vlan.gateway,
         BUILD_TYPE=build_type,
-        OS_RELEASE=form.cleaned_data['os_release'],
+        OS_RELEASE=os_release,
         SERVER_IP=form.instance.vlan.server_ip,
     ).split("\n")
     #
