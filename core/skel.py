@@ -81,3 +81,12 @@ LABEL Kickstart
     APPEND initrd=images/{OS_RELEASE}/initrd.img ramdisk_size=10000 ks=nfs:{SERVER_IP}:{KS_ROOT}/{HOSTNAME}.ks ksdevice=bootif
 
 """
+
+# vlan_XX.conf file used by dhcpd.
+base_vlan = """#
+subnet {NETWORK} netmask {CIDR} {
+    authoritative;
+    option routers {GATEWAY};
+    next-server {SERVER_IP};
+}
+"""

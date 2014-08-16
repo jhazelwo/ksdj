@@ -10,7 +10,7 @@ from . import ipcalc
 # https://github.com/nullpass/npnutils/blob/master/fileasobj.py
 from .fileasobj import FileAsObj
 # base templates for files we create
-from .skel import base_ks, base_sh, base_tftp
+from .skel import base_ks, base_sh, base_tftp, base_vlan
 
 # Since we cannot include the real settings.py on github
 # I have added examples for what these variables might be
@@ -26,8 +26,6 @@ from .settings import TFTP          # /opt/tftpboot/pxelinux.cfg
 from .settings import etc_hosts             # KSROOT, hosts
 from .settings import etc_hosts_allow       # KSROOT, hosts.allow
 from .settings import etc_pxe_clients_conf  # KSROOT, pxe_clients.conf
-
-
 
 def vlan_create(s, form):
     """
@@ -73,12 +71,12 @@ def vlan_create(s, form):
         messages.error(s.request, 'Failed to add VLAN config. The file "vlan_%s.conf" already exists!' % vlanname, extra_tags='danger')
         return False
     vlan_conf = FileAsObj(fname)
-    vlan_conf.contents = []
-    vlan_conf.add('#')
-    vlan_conf.add('subnet %s netmask %s {' % ( network, cidr ) )
-    vlan_conf.add('    authoritative;')
-    vlan_conf.add('    option routers %s;' % gateway)
-    vlan_conf.add('    next-server %s;' % server_ip)
+    vlan_conf.contents = base_vlan.format(
+        NETWORK=network,
+        CIDR=cidr,
+        GATEWAY=gateway,
+        SERVER_IP=server_ip,
+    ).split("\n")
     #
     # All is OK, save changes
     dhcpd_conf.write()
