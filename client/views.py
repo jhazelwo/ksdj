@@ -23,11 +23,13 @@ class ClientCreateView(generic.CreateView):
     template_name = 'client/ClientCreateView.html'
 
     def get_context_data(self, **kwargs):
+        """ """
         context = super(ClientCreateView, self).get_context_data(**kwargs)
         context['vlans'] = VLAN.objects.all()
         return context
 
     def form_valid(self, form):
+        """ """ 
         if not kickstart.client_create(self, form):
             return super(ClientCreateView, self).form_invalid(form)
         messages.success(self.request, 'Client added to kickstart!')
