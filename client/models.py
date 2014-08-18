@@ -9,7 +9,7 @@ from core.tools import UltraModel
 class Client(UltraModel):
     """
     """
-    name = models.CharField(validators=[RegexValidator('^[a-zA-Z0-9\.\-\_]+$')], max_length=32, unique=True) # Hostname
+    name = models.CharField(validators=[RegexValidator('^[a-zA-Z][a-zA-Z0-9\.\-\_]+$')], max_length=32, unique=True) # Hostname
     mac = models.CharField(validators=[RegexValidator('^([a-gA-G0-9]{2}[:-]){5}([a-gA-G0-9]){2}$')], max_length=17, unique=True) # MAC Address
     ip = models.CharField(validators=[RegexValidator('^((\d){1,3}.){3}(\d){1,3}$')], max_length=15, blank=True, null=False, unique=True)
     TYPE_CHOICES = (
@@ -21,7 +21,6 @@ class Client(UltraModel):
     build_type = models.CharField(
         max_length=2,
         choices=TYPE_CHOICES,
-        #default=TYPE_CHOICES[0][0]
         default=None
     )
     OS_CHOICES = (
@@ -31,7 +30,6 @@ class Client(UltraModel):
     os_release = models.CharField(
         max_length=3,
         choices=OS_CHOICES,
-        #default=OS_CHOICES[0][0]
         default=None
     )
     #
@@ -46,4 +44,3 @@ class Client(UltraModel):
         self.name = self.name.lower()
         self.mac = self.mac.lower()
         super(Client, self).save(*args, **kwargs)
-

@@ -94,7 +94,8 @@ def vlan_update(s,form):
     
     If there is a problem then generate an error and return False
     """
-    messages.warning(s.request, 'poop')
+    # s.old == Queryset.get of original VLAN
+    messages.warning(s.request, 'kickstart.vlan_update(self, form) does not do anything right now.' )
     return False
 
 def client_create(s,form):
