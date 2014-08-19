@@ -95,6 +95,28 @@ def vlan_update(s,form):
     If there is a problem then generate an error and return False
     """
     # s.old == Queryset.get of original VLAN
+    #if s.old.cidr != form.instance.cidr:
+    #    print('color our world blackened')
+    network = form.cleaned_data['network']
+    cidr = form.cleaned_data['cidr']
+    server_ip = form.cleaned_data['server_ip']
+    vlanname = form.cleaned_data['name']
+    #
+    try:
+        netinfo = ipcalc.Network('%s/%s' % (network,cidr))
+    except Exception as e:
+        messages.error(s.request, 'Failed to determine network information from data provided. - %s' % e, extra_tags='danger')
+        return False
+    #
+    if server_ip not in netinfo:
+        messages.warning(s.request, 'IP address %s is not inside network %s/%s!' % (server_ip,network,cidr))
+        return False
+    #
+    # Set gateway
+    if not form.cleaned_data['gateway']:
+        form.instance.gateway = netinfo.host_first()
+    gateway = form.instance.gateway
+    
     messages.warning(s.request, 'kickstart.vlan_update(self, form) does not do anything right now.' )
     return False
 

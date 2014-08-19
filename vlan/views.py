@@ -81,20 +81,16 @@ class VLANUpdateView(generic.UpdateView):
         return super(VLANUpdateView, self).form_invalid(form)
     
     def form_valid(self, form):
-        """
-        If there is a form.cleaned_data['name']
-        then assume the VLAN has no clients attached to it
-        and it's OK to run kickstart.vlan_update()
-        Also, set self.old to a query of the VLAN as it
-        exists in the database right now so that we know
-        which files to update with the new information.
-        """
-        if 'name' in form.cleaned_data:
+        """ """
+        count = Client.objects.filter(vlan=self.object.id).count()
+        if count > 0:
+            for this in ['name','network','cidr','gateway','server_ip']:
+                if this in form.cleaned_data:
+                    messages.error(self.request, 'VLAN is being used by one or more clients, unable to change.', extra_tags='danger')
+                    return super(VLANUpdateView, self).form_invalid(form)
+        if 'name' in form.cleaned_data and count < 1:
             self.old = VLAN.objects.get(id=self.object.id)
             if not kickstart.vlan_update(self, form):
                 return super(VLANUpdateView, self).form_invalid(form)
-        #
-        # else we only update the notes field, in which case just carry on
-        #
         messages.success(self.request, 'Changes saved!')
         return super(VLANUpdateView, self).form_valid(form)
