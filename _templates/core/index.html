@@ -8,5 +8,11 @@
 </div>
 <div class="row">
     <p class="col-md-4 bg-warning">Include warning about extra steps needed when adding a VLAN.</p>
+    <hr>
+    <a href="{% url 'human:create' %}">Sign up</a><br>
+    <a href="{% url 'human:update' %}">Edit my account</a><br>
+    <a href="{% url 'human:login' %}">Log In</a><br>
+    <a href="{% url 'human:logout' %}">Log Out</a><br>
+    <a href="{% url 'human:index' %}">View my account</a><br>
 </div>
 {% endblock content %}

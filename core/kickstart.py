@@ -1,9 +1,21 @@
 # core/kickstart.py
+"""
+
+warnins vs errors -
+    I've been going with the idea that errors related to input,
+    like a typo in IP, should be warnings (yellow) but errors
+    in the subsystem, like failure to update or create a file,
+    should be errors (red). 
+
+
+"""
+
 import os
 import time
 from socket import gethostbyname
 from django.contrib import messages
 from vlan.models import VLAN
+from client.models import Client
 
 # https://github.com/tehmaze/ipcalc (ported to py3)
 from . import ipcalc
@@ -26,6 +38,19 @@ from .settings import TFTP          # /opt/tftpboot/pxelinux.cfg
 from .settings import etc_hosts             # KSROOT, hosts
 from .settings import etc_hosts_allow       # KSROOT, hosts.allow
 from .settings import etc_pxe_clients_conf  # KSROOT, pxe_clients.conf
+
+def vlan_validate(s, form):
+    try:
+        netinfo = ipcalc.Network('%s/%s' % (form.cleaned_data['network'],form.cleaned_data['cidr']))
+    except Exception as e:
+        messages.error(s.request, 'Failed to determine network information from data provided. - %s' % e, extra_tags='danger')
+        return False
+    #
+    if form.cleaned_data['server_ip'] not in netinfo:
+        messages.warning(s.request, 'IP address %s is not inside network %s/%s!' % (server_ip,network,cidr))
+        return False
+
+    
 
 def vlan_create(s, form):
     """
@@ -151,6 +176,9 @@ def client_create(s,form):
         except Exception as e:
             messages.warning(s.request, 'DNS lookup failed for "%s". Please correct hostname, update DNS, or specify IP. - %s' % (hostname,e))
             return False
+    if Client.objects.filter(ip=form.instance.ip).count() > 0:
+        messages.warning(s.request, 'DNS returned "%s", but that IP is already in use by another kickstart client.' % form.instance.ip)
+        return False
     if not form.cleaned_data['vlan']:
         for thisv in VLAN.objects.all():
             getvlan = ipcalc.Network('%s/%s' % (thisv.network,thisv.get_cidr_display()))

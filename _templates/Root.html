@@ -42,12 +42,15 @@
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="#">Login</a></li>
+            {% if not user.is_authenticated %}
+            <li><a href="{% url 'human:create' %}">Sign-Up!</a></li>
+            <li><a href="{% url 'human:login' %}">Login</a></li>
+            {% else %}
+            <li><a href="{% url 'human:index' %}">{{ user }}</a></li>
+            <li><a href="{% url 'human:logout' %}">Logout</a></li>
+            {% endif %}
             <li><a href="{% block help_url %}{% endblock %}">Help</a></li>
           </ul>
-          <form class="navbar-form navbar-right">
-            <input type="text" class="form-control" placeholder="Search...">
-          </form>
         </div>
       </div>
     </div>

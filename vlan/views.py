@@ -3,6 +3,9 @@
 from django.views import generic
 from django.contrib import messages
 
+from braces.views import LoginRequiredMixin, StaffuserRequiredMixin
+
+
 from core import kickstart
 
 from client.models import Client
@@ -48,7 +51,9 @@ class VLANDetailView(generic.DetailView):
         return context
 
 
-class VLANUpdateView(generic.UpdateView):
+class VLANUpdateView(LoginRequiredMixin,
+                    StaffuserRequiredMixin,
+                    generic.UpdateView):
     """ Edit a Kickstart VLAN
     
     If there are clients using this vlan, give warning
@@ -57,6 +62,7 @@ class VLANUpdateView(generic.UpdateView):
     """
     form_class, model = VLANForm, VLAN
     template_name = 'vlan/VLANUpdateView.html'
+    raise_exception = True   
     
     def get_form_class(self):
         """

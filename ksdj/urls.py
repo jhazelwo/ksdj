@@ -12,4 +12,5 @@ urlpatterns = patterns('',
     #
     url(r'^client/', include('client.urls', namespace='client')),
     url(r'^vlan/',   include('vlan.urls', namespace='vlan')),
+    url(r'^user/',   include('human.urls', namespace='human')),
 )
