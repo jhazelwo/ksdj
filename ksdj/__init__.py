@@ -18,9 +18,6 @@ Auth:
     My philosophy stands that all users who can get to the site should have read-access.
     If you have to hide client/server info from your employees what the fsck kind of business are you running?
 
-django-braces:
-    I'm trying this again, still don't like it. It's a gigantic trade-off, giving up customization for a slightly thinner code-base.
-
 Files we modify: 
 
 ks/etc/hosts
