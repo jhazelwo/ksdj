@@ -48,7 +48,7 @@
                     <tr><td colspan=2><h4>Notes:</h4>{{ form.notes }}</td></tr>
                     <tr>
                         <td class="text-left"><a href="{{ object.get_absolute_url }}" class="btn btn-sm btn-info">Cancel</a></td>
-                        <td class="text-right"><input type="submit" class="btn btn-sm btn-success" value="Save Changes!" />{% csrf_token %}</td></tr>
+                        <td class="text-right">{% if user.is_authenticated %}<input type="submit" class="btn btn-sm btn-success" value="Save Changes!" />{% csrf_token %}{% endif %}</td></tr>
                 </table>
             </form>
         </div>

@@ -18,7 +18,7 @@
                     <tr><td class="text-right"><strong>Gateway:</strong></td><td> {{ form.gateway }} <em>Leave empty to just use lowest host.</em> {{ form.gateway.errors }}</td></tr>
                     <tr><td class="text-right"><strong>Kickstart Server IP</strong></td><td> {{ form.server_ip }} <em>(The IP that the kickstart server will use, not the client IP){{ form.server_ip.errors }}</em></td></tr>
                     <tr><td colspan=2><h4>Notes:</h4>{{ form.notes }}</td></tr>
-                    <tr><td colspan=2 class="text-right"><input type="submit" class="btn btn-sm btn-success" value="Add!" />{% csrf_token %}</td></tr>
+                    <tr><td colspan=2 class="text-right">{% if user.is_authenticated %}<input type="submit" class="btn btn-sm btn-success" value="Add!" />{% csrf_token %}{% endif %}</td></tr>
                 </table>
             </form>
         </div>

@@ -4,9 +4,9 @@ from django.views import generic
 from django.contrib import messages
 
 from core import kickstart
+from human import authtools
 
 from client.models import Client
-
 from vlan.models import VLAN
 
 from .forms import VLANForm, VLANLockedForm
@@ -31,6 +31,8 @@ class VLANCreateView(generic.CreateView):
     
     def form_valid(self, form):
         """ """
+        if not authtools.user_and_staff(self):
+            return super(VLANUpdateView, self).form_invalid(form)
         if not kickstart.vlan_create(self, form):
             return super(VLANCreateView, self).form_invalid(form)
         messages.success(self.request, 'VLAN %s added to Kickstart!' % form.cleaned_data['name'])
@@ -82,6 +84,8 @@ class VLANUpdateView(generic.UpdateView):
     
     def form_valid(self, form):
         """ """
+        if not authtools.user_and_staff(self):
+            return super(VLANUpdateView, self).form_invalid(form)
         count = Client.objects.filter(vlan=self.object.id).count()
         if count > 0:
             for this in ['name','network','cidr','gateway','server_ip']:

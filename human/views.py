@@ -10,15 +10,13 @@ from django.core.urlresolvers import reverse_lazy
 from django.core.validators import EmailValidator
 from django.core.exceptions import ValidationError
 
-from braces.views import AnonymousRequiredMixin
-
 class Index(generic.ListView):
     """ """
     form_class, model = UserCreationForm, User
     template_name = 'human/index.html'
 
 
-class LoginView(AnonymousRequiredMixin, generic.FormView):
+class LoginView(generic.FormView):
     """ """
     form_class, model = AuthenticationForm, User
     template_name = 'human/LoginView.html'
@@ -52,7 +50,7 @@ class UpdateView(generic.FormView):
     success_url = reverse_lazy('human:index')
 
 
-class SignupView(AnonymousRequiredMixin, generic.CreateView):
+class SignupView(generic.CreateView):
     """ """
     form_class, model = UserCreationForm, User
     template_name = 'human/SignupView.html'
