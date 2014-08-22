@@ -10,6 +10,8 @@ from django.core.urlresolvers import reverse_lazy
 from django.core.validators import EmailValidator
 from django.core.exceptions import ValidationError
 
+from .forms import LoginForm
+
 class Index(generic.ListView):
     """ """
     form_class, model = UserCreationForm, User
@@ -18,20 +20,21 @@ class Index(generic.ListView):
 
 class LoginView(generic.FormView):
     """ """
-    form_class, model = AuthenticationForm, User
+    form_class, model = LoginForm, User
     template_name = 'human/LoginView.html'
-    success_url = reverse_lazy('home')
+    success_url = reverse_lazy('human:index')
 
     def form_valid(self, form):
         username = form.cleaned_data['username']
         password = form.cleaned_data['password']
         user = authenticate(username=username, password=password)
+        if user is not None:
+            if user.is_active:
+                messages.success(self.request, 'Welcome back!')
+                login(self.request, user)
+                return super(LoginView, self).form_valid(form)
+        return super(LoginView, self).form_invalid(form)
 
-        if user is not None and user.is_active:
-            login(self.request, user)
-            return super(LoginView, self).form_valid(form)
-        else:
-            return self.form_invalid(form)
 
 class LogoutView(generic.RedirectView):
     """ """
@@ -54,7 +57,7 @@ class SignupView(generic.CreateView):
     """ """
     form_class, model = UserCreationForm, User
     template_name = 'human/SignupView.html'
-    success_url = reverse_lazy('home')
+    success_url = reverse_lazy('human:login')
 
     def form_valid(self, form):
         """
@@ -80,6 +83,9 @@ class SignupView(generic.CreateView):
             print(e)
             messages.warning(self.request, 'Please enter a valid email address.')
             return super(SignupView, self).form_invalid(form)
+        if len(form.cleaned_data['password1']) < 8:
+            messages.warning(self.request, 'Password too short! 8 character minimum.')
+            return super(SignupView, self).form_invalid(form)
         messages.success(self.request, 'Welcome!')
         form.instance.username = email
-        return super(SignupView, self).form_invalid(form)
+        return super(SignupView, self).form_valid(form)
