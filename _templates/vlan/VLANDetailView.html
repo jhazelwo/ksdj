@@ -17,7 +17,7 @@
                     <tr><td class="text-right"><strong>Gateway:</strong></td><td> {{ object.gateway }}</td></tr>
                     <tr><td class="text-right"><strong>Kickstart Server IP</strong></td><td> {{ object.server_ip }}</em></td></tr>
                     <tr><td colspan=2><h4>Notes:</h4>{{ object.notes|linebreaksbr }}</td></tr>
-                    <tr><td colspan=2>{% if user.is_authenticated %}<a href="{% url 'vlan:update' pk=object.id %}" class="btn btn-md btn-info">Edit</a>{% endif %}</td></tr>
+                    <tr><td colspan=2>{% if user.is_staff %}<a href="{% url 'vlan:update' pk=object.id %}" class="btn btn-md btn-info">Edit</a>{% endif %}</td></tr>
                 </table>
         </div>
     </div>

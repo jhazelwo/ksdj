@@ -17,6 +17,13 @@ Auth:
     I think we're going to use the is_staff flag on account to determine if they can edit/add kickstart clients and vlans.
     My philosophy stands that all users who can get to the site should have read-access.
     If you have to hide client/server info from your employees what the fsck kind of business are you running?
+    
+    I wonder if I can trim down the LOC count for human.LogOut() without using a FBV
+    
+    Although I've got the mixins working the way I want, there are still some explicit calls to authtools.(user&staff|no_user) in some of the views.
+        Need to circle back and clean them up later.
+
+
 
 Files we modify: 
 

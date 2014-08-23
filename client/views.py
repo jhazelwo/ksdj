@@ -2,8 +2,10 @@
 
 from django.views import generic
 from django.contrib import messages
+from django.shortcuts import redirect
 
 from core import kickstart
+from human import authtools
 
 from vlan.models import VLAN
 
@@ -21,6 +23,11 @@ class ClientCreateView(generic.CreateView):
     """ """
     form_class, model = ClientForm, Client
     template_name = 'client/ClientCreateView.html'
+
+    def get(self, request, *args, **kwargs):
+        if authtools.no_user(self):
+            return redirect('{}?next={}'.format(reverse('human:login'),request.path))
+        return super(ClientCreateView, self).get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         """ """
@@ -46,3 +53,8 @@ class ClientUpdateView(generic.UpdateView):
     """ """
     form_class, model = ClientForm, Client
     template_name = 'client/ClientUpdateView.html'
+
+    def form_valid(self, form):
+        """ """
+        if not authtools.user_and_staff(self):
+            return super(ClientUpdateView, self).form_invalid(form)

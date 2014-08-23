@@ -1,5 +1,7 @@
 {% extends "Root.html" %}
 
+{% block UserProfile %} class="active"{% endblock %}
+
 {% block dashboardtitle %}Your account{% endblock %}
 
 {% block content %}
@@ -13,7 +15,6 @@
                     <tr><td class="text-right"><strong>e-mail:</strong></td><td>{{ user.username }}</td></tr>
                     <tr><td class="text-right"><strong>Created:</strong></td><td> {{ user.date_joined }} </td></tr>
                     <tr><td class="text-right"><strong>KS Admin?:</strong></td><td> {{ user.is_staff }}</td></tr>
-                    <tr><td colspan=2 class="text-right"><a href="{% url 'human:update' %}" class="text-info">Change Password</a></td></tr>
                 </table>
         </div>
     </div>

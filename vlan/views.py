@@ -2,9 +2,12 @@
 
 from django.views import generic
 from django.contrib import messages
+from django.shortcuts import redirect
+from django.core.urlresolvers import reverse
 
 from core import kickstart
 from human import authtools
+from human.mixins import RequireStaffMixin
 
 from client.models import Client
 from vlan.models import VLAN
@@ -19,7 +22,7 @@ class Index(generic.ListView):
     template_name = 'vlan/index.html'
 
 
-class VLANCreateView(generic.CreateView):
+class VLANCreateView(RequireStaffMixin, generic.CreateView):
     """ Add a VLAN to Kickstart """
     form_class, model = VLANForm, VLAN
     template_name = 'vlan/VLANCreateView.html'
@@ -31,8 +34,6 @@ class VLANCreateView(generic.CreateView):
     
     def form_valid(self, form):
         """ """
-        if not authtools.user_and_staff(self):
-            return super(VLANUpdateView, self).form_invalid(form)
         if not kickstart.vlan_create(self, form):
             return super(VLANCreateView, self).form_invalid(form)
         messages.success(self.request, 'VLAN %s added to Kickstart!' % form.cleaned_data['name'])
@@ -50,7 +51,7 @@ class VLANDetailView(generic.DetailView):
         return context
 
 
-class VLANUpdateView(generic.UpdateView):
+class VLANUpdateView(RequireStaffMixin, generic.UpdateView):
     """ Edit a Kickstart VLAN
     
     If there are clients using this vlan, give warning

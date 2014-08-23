@@ -43,10 +43,10 @@
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
             {% if not user.is_authenticated %}
-            <li><a href="{% url 'human:create' %}">Sign-Up!</a></li>
-            <li><a href="{% url 'human:login' %}">Login</a></li>
+            <li{% block SignupView %}{% endblock %}><a href="{% url 'human:create' %}">Sign-Up!</a></li>
+            <li{% block LoginView %}{% endblock %}><a href="{% url 'human:login' %}">Login</a></li>
             {% else %}
-            <li><a href="{% url 'human:index' %}">{{ user }}</a></li>
+            <li{% block UserProfile %}{% endblock %}><a href="{% url 'human:index' %}">{{ user }}</a></li>
             <li><a href="{% url 'human:logout' %}">Logout</a></li>
             {% endif %}
             <li><a href="{% block help_url %}{% endblock %}">Help</a></li>
