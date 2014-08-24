@@ -84,9 +84,9 @@ LABEL Kickstart
 
 # vlan_XX.conf file used by dhcpd.
 base_vlan = """#
-subnet {NETWORK} netmask {CIDR} {
+subnet {NETWORK} netmask {CIDR} {{
     authoritative;
     option routers {GATEWAY};
     next-server {SERVER_IP};
-}
+}}
 """

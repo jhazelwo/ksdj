@@ -12,6 +12,7 @@ from django.core.validators import EmailValidator
 from django.core.exceptions import ValidationError
 
 from .mixins import RequireAnonMixin, RequireUserMixin
+from .authtools import common_passwords
 
 class Index(RequireUserMixin, generic.ListView):
     """
@@ -89,10 +90,12 @@ class SignupView(RequireAnonMixin, generic.CreateView):
             messages.warning(self.request, 'Please enter a valid email address.')
             return super(SignupView, self).form_invalid(form)
         #
+        if passw in common_passwords:
+            messages.warning(self.request, 'That password is in the list of common passwords.')
+            return super(SignupView, self).form_invalid(form)
         if len(passw) < 8:
             messages.warning(self.request, 'Password too short! 8 character minimum.')
             return super(SignupView, self).form_invalid(form)
-        #
         if len(passw) > 1024:
             messages.warning(self.request, 'Thank you for trying to use a super-long password but unfortunatly it was too long. Please keep it fewer than 1025 characters.')
             return super(SignupView, self).form_invalid(form)

@@ -23,6 +23,11 @@ Auth:
     Although I've got the mixins working the way I want, there are still some explicit calls to authtools.(user&staff|no_user) in some of the views.
         Need to circle back and clean them up later.
 
+vlan_modify
+    I've decided to do a 'delete, then create' for the update function instead of editing/moving files because I believe D&C will prove
+    to be more robust in the future if we get into an out-of-sync situation where files were manually moved/changed/deleted on the ks server
+    I'll be doing the same with clients when I get there.
+
 
 
 Files we modify: 
