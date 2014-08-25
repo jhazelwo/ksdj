@@ -55,6 +55,12 @@ class ClientUpdateView(RequireStaffMixin, generic.UpdateView):
     form_class, model = ClientForm, Client
     template_name = 'client/ClientUpdateView.html'
 
+    def get_context_data(self, **kwargs):
+        """ """
+        context = super(ClientUpdateView, self).get_context_data(**kwargs)
+        context['vlans'] = VLAN.objects.all()
+        return context
+
     def form_valid(self, form):
         """ """
         old = Client.objects.get(id=self.object.id)

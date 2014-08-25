@@ -108,7 +108,6 @@ def vlan_create(s, form):
     vlan_conf.write()
     return True
 
-
 def vlan_delete(old):
     """
     old = VLAN.objects.get(id=self.object.id)
@@ -310,14 +309,14 @@ def client_create(s,form):
 def client_delete(old):
     """
     Files to update:
-    
-    pxeconf.write()
-    hostsfile.write()
-    allowfile.write()
-    
-    tftp_pxe.write()
-    hostname_ks.write()
-    client_sh.write()
+        pxeconf
+        hostsfile
+        allowfile
+        
+    Files to remove:
+        tftp_pxe
+        hostname_ks
+        client_sh
     """
     hostname = old.name
     mac_addr = old.mac
