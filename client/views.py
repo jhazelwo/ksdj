@@ -6,6 +6,7 @@ from django.shortcuts import redirect
 
 from core import kickstart
 from human import authtools
+from human.mixins import RequireStaffMixin
 
 from vlan.models import VLAN
 
@@ -49,12 +50,17 @@ class ClientDetailView(generic.DetailView):
     template_name = 'client/ClientDetailView.html'
 
 
-class ClientUpdateView(generic.UpdateView):
+class ClientUpdateView(RequireStaffMixin, generic.UpdateView):
     """ """
     form_class, model = ClientForm, Client
     template_name = 'client/ClientUpdateView.html'
 
     def form_valid(self, form):
         """ """
-        if not authtools.user_and_staff(self):
+        old = Client.objects.get(id=self.object.id)
+        if not kickstart.client_delete(old):
             return super(ClientUpdateView, self).form_invalid(form)
+        if not kickstart.client_create(self, form):
+            return super(ClientUpdateView, self).form_invalid(form)
+        messages.success(self.request, 'Changes saved!')
+        return super(ClientUpdateView, self).form_valid(form)

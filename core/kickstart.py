@@ -165,9 +165,28 @@ def client_create(s,form):
         except Exception as e:
             messages.warning(s.request, 'DNS lookup failed for "%s". Please correct hostname, update DNS, or specify IP. - %s' % (hostname,e))
             return False
-    if Client.objects.filter(ip=form.instance.ip).count() > 0:
-        messages.warning(s.request, 'DNS returned "%s", but that IP is already in use by another kickstart client.' % form.instance.ip)
+    #
+    #
+    ip_count = Client.objects.filter(ip=form.instance.ip).count()
+    if ip_count is not 1 and ip_count is not 0:
+        messages.error(s.request, 'Critical error! IP %s in use by multiple clients. Contact Sr. Kickstart Admin!' % (form.instance.ip), extra_tags='danger')
         return False
+    if ip_count == 1:
+        """
+        I'm finding it difficult to write a comment block explaining this sanity check part
+        so I've put comments on lines as they execute in hopes others will understand.
+        """
+        try:
+            # if this is a client edit, this will pass
+            me = s.object.id
+        except NameError:
+            # s{elf}.object.id isn't set; this must be a client add then.
+            me = None
+        if me != Client.objects.filter(ip=form.instance.ip).get().id:
+            messages.warning(s.request, 'DNS returned "%s", but that IP is already in use by another kickstart client.' % form.instance.ip)
+            return False
+        # else; the IP that's in use is the IP of the client we're changing and that's OK.
+    #
     if not form.cleaned_data['vlan']:
         for thisv in VLAN.objects.all():
             getvlan = ipcalc.Network('%s/%s' % (thisv.network,thisv.get_cidr_display()))
@@ -176,9 +195,9 @@ def client_create(s,form):
     if not form.instance.vlan:
         messages.warning(s.request, 'IP %s not valid for any known vlans. Please check address and/or add needed VLAN.' % form.instance.ip)
         return False
-    
+    #
     if form.instance.ip not in ipcalc.Network('%s/%s' % (form.instance.vlan.network,form.instance.vlan.get_cidr_display())):
-        messages.warning(s.request, 'IP %s not valid VLAN %s. Please check address and/or add needed VLAN.' % (form.instance.ip,form.instance.vlan))
+        messages.warning(s.request, 'IP %s not valid for VLAN %s. Please check address and/or add needed VLAN.' % (form.instance.ip,form.instance.vlan))
         return False
     #
     # etc/hosts
@@ -217,6 +236,9 @@ def client_create(s,form):
     pxeconf = FileAsObj(etc_pxe_clients_conf)
     if pxeconf.grep(' %s.%s ' % (hostname, ks_domainname) ):
         messages.error(s.request, 'Failed to update %s, host "%s" already present!' % (etc_pxe_clients_conf,hostname), extra_tags='danger')
+        return False
+    if pxeconf.grep(mac_addr):
+        messages.error(s.request, 'Failed to update %s, MAC "%s" already present!' % (etc_pxe_clients_conf,mac_addr), extra_tags='danger')
         return False
     toadd = 'host {HOSTNAME}.{DOMAINNAME} {{ hardware ethernet {MAC} ; fixed-address {HOSTNAME}.{DOMAINNAME} ;}}'.format(
         HOSTNAME=hostname,
@@ -283,4 +305,48 @@ def client_create(s,form):
     allowfile.write()
     hostname_ks.write()
     client_sh.write()
+    return True
+
+def client_delete(old):
+    """
+    Files to update:
+    
+    pxeconf.write()
+    hostsfile.write()
+    allowfile.write()
+    
+    tftp_pxe.write()
+    hostname_ks.write()
+    client_sh.write()
+    """
+    hostname = old.name
+    mac_addr = old.mac
+    client_ip = old.ip
+    dashmac = '-'.join(mac_addr.split(":"))
+    dashmac = '01-{}'.format(dashmac)
+    #
+    pxeconf = FileAsObj(etc_pxe_clients_conf)
+    pxeconf.rm(pxeconf.grep(mac_addr))
+    pxeconf.rm(pxeconf.grep(' {}.{} '.format(hostname,ks_domainname)))
+    #
+    hostsfile = FileAsObj(etc_hosts, verbose=True)
+    hostsfile.rm(hostsfile.grep('{} # Kickstart Client '.format(hostname)))
+    hostsfile.rm(hostsfile.egrep('^{} '.format(client_ip)))
+    #
+    allowfile = FileAsObj(etc_hosts_allow, verbose=True)
+    allowfile.rm(allowfile.grep(client_ip))
+    #
+    for thisfile in [os.path.join(TFTP,dashmac),
+                     os.path.join(KS_CONF_DIR,'%s.ks' % hostname),
+                     os.path.join(CLIENT_DIR,'%s.sh' % hostname),
+                     ]:
+        try:
+            os.remove(thisfile)
+            print('Deleted {}'.format(thisfile))
+        except Exception as e:
+            print(e)
+    #
+    pxeconf.write()
+    hostsfile.write()
+    allowfile.write()
     return True
