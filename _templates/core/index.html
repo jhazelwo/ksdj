@@ -6,9 +6,19 @@
 
 {% block content %}
 <div class="row">
-<p class="col-md-4">Opening welcome message, and information about how to use this system.</p>
+<p class="col-md-4">
+    Welcome to the Kickstart web interface.
+    To add a new server (called a 'client' in this context),
+    you'll need to already know the hostname, MAC address,
+    what kind of build (web/db/app/etc) and which Linux
+    release to install.<br>
+    If you have all that, client the link on the left and
+    get started!
+</p>
 </div>
 <div class="row">
-    <p class="col-md-4 bg-warning">Include warning about extra steps needed when adding a VLAN.</p>
+    <p class="col-md-4 bg-warning">
+        When adding a VLAN to kickstart be sure you plumb and configure the corresponding interface on the Kickstart server itself. 
+    </p>
 </div>
 {% endblock content %}

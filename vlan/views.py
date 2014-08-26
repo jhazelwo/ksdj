@@ -6,7 +6,6 @@ from django.shortcuts import redirect
 from django.core.urlresolvers import reverse
 
 from core import kickstart
-from human import authtools
 from human.mixins import RequireStaffMixin
 
 from client.models import Client

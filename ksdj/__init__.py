@@ -3,7 +3,7 @@
         python 3.4.1 && django 1.7c2
 
 
-Really sick of screwing up plural/non-plural names; I know where it makes sense to add an 's'; but it burned so much typo/recompile time in the past
+Really sick of screwing up plural/non-plural names; I know where it makes sense to add an 's'; but I burned so much typo/recompile time in the past
 I'm just going to make everything singular going forward.
 
 
@@ -14,14 +14,7 @@ Auth:
     crazy suits.
     For locals override username with lower(email)
     
-    I think we're going to use the is_staff flag on account to determine if they can edit/add kickstart clients and vlans.
-    My philosophy stands that all users who can get to the site should have read-access.
-    If you have to hide client/server info from your employees what the fsck kind of business are you running?
-    
     I wonder if I can trim down the LOC count for human.LogOut() without using a FBV
-    
-    Although I've got the mixins working the way I want, there are still some explicit calls to authtools.(user&staff|no_user) in some of the views.
-        Need to circle back and clean them up later.
 
 vlan_modify
     I've decided to do a 'delete, then create' for the update function instead of editing/moving files because I believe D&C will prove
