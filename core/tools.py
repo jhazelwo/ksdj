@@ -13,6 +13,7 @@ class UltraModel(models.Model):
     # nearly everything.
     doc_url = models.URLField(blank=True, null=True)   # A URL to external/wiki documentatoin about the object.
     notes   = models.TextField(blank=True, null=True)  # Comments/notes about the object
+
     
     class Meta:
         abstract = True

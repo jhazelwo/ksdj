@@ -7,6 +7,7 @@ from django.core.urlresolvers import reverse
 
 from core import kickstart
 from human.mixins import RequireStaffMixin
+from recent.functions import log_form_valid
 
 from client.models import Client
 from vlan.models import VLAN
@@ -36,6 +37,7 @@ class VLANCreateView(RequireStaffMixin, generic.CreateView):
         if not kickstart.vlan_create(self, form):
             return super(VLANCreateView, self).form_invalid(form)
         messages.success(self.request, 'VLAN %s added to Kickstart!' % form.cleaned_data['name'])
+        log_form_valid(self, form)
         return super(VLANCreateView, self).form_valid(form)
 
 
@@ -111,4 +113,5 @@ class VLANUpdateView(RequireStaffMixin, generic.UpdateView):
             if not kickstart.vlan_create(self, form):
                 return super(VLANUpdateView, self).form_invalid(form)
         messages.success(self.request, 'Changes saved!')
+        log_form_valid(self, form)
         return super(VLANUpdateView, self).form_valid(form)

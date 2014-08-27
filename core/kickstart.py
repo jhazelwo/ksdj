@@ -122,7 +122,6 @@ def vlan_delete(old):
         messages.error(s.request, dhcpd_conf.Trace, extra_tags='danger')
         return False
     dhcpd_conf.rm(dhcpd_conf.grep('vlan_%s.conf' % old.name))
-    print(dhcpd_conf)
     dhcpd_conf.write()
     fname = os.path.join(KSROOT, 'vlan_%s.conf' % old.name)
     if os.path.isfile(fname):

@@ -1,3 +1,5 @@
+# client/models.py
+
 from django.db import models
 from django.core.validators import RegexValidator
 from django.core.urlresolvers import reverse

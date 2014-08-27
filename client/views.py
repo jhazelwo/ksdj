@@ -6,6 +6,7 @@ from django.shortcuts import redirect
 
 from core import kickstart
 from human.mixins import RequireStaffMixin
+from recent.functions import log_form_valid
 
 from vlan.models import VLAN
 
@@ -41,6 +42,7 @@ class ClientCreateView(RequireStaffMixin, generic.CreateView):
         if not kickstart.client_create(self, form):
             return super(ClientCreateView, self).form_invalid(form)
         messages.success(self.request, 'Client added to kickstart!')
+        log_form_valid(self, form)
         return super(ClientCreateView, self).form_valid(form)
 
 
@@ -63,4 +65,5 @@ class ClientUpdateView(RequireStaffMixin, generic.UpdateView):
         if not kickstart.client_create(self, form):
             return super(ClientUpdateView, self).form_invalid(form)
         messages.success(self.request, 'Changes saved!')
+        log_form_valid(self, form)
         return super(ClientUpdateView, self).form_valid(form)
