@@ -1,5 +1,5 @@
 """
-    KSDJ - Django interface for Kickstart server.
+    KSDJ - Django interface for Kickstart server using NFS & PXE.
     By: nullpass
     Running:  python 3.4.1 && django 1.7c2+
 
@@ -14,19 +14,11 @@ Really sick of screwing up plural/non-plural names. I know where it makes sense 
 I'm just going to make everything singular going forward.
 
 
-    TODO:
+TODO:
+    finish logging
+    do ldap auth
+    nginx, need a basic meta redirect to send 80 to 443.
 
-Auth:
-    py3+ldap && a couple local backup accounts though it kills me that i'd have to enforce access controls for this project.
-    crazy suits.
-    For locals override username with lower(email)
-    
-    I wonder if I can trim down the LOC count for human.LogOut() without using a FBV
-
-vlan_modify
-    I've decided to do a 'delete, then create' for the update function instead of editing/moving files because I believe D&C will prove
-    to be more robust in the future if we get into an out-of-sync situation where files were manually moved/changed/deleted on the ks server
-    I'll be doing the same with clients when I get there.
 
 recent:
     named for an old url in another project, this is the start of my logging system.
@@ -56,6 +48,64 @@ tftp/01-{mac address}
 ks/etc/dhcpd.conf
 ks/etc/vlan_XX.conf
 
+
+-==-
+
+If I get hit by a bus here are the non-prod deployment notes; of course you don't need to worry about any of this in prod.
+
+VIRTUALENV:
+    get the latest from their github repo. v1.9.x doesn't work with py3.4, latest does.
+
+NGINX:
+    -1.7.4 works ok
+    ./configure --without-http_rewrite_module --with-http_ssl_module --with-debug && make && make install
+    mkdir /usr/local/nginx/ssl/
+    cd /usr/local/nginx/ssl/
+    openssl genrsa -des3 -out server.key 1024
+    openssl req -new -key server.key -out server.csr
+    openssl rsa -in server.key.org -out server.key
+    openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
+
+
+# ksdj_nginx.conf
+user apache;
+events {
+    worker_connections  1024;
+}
+http {
+    upstream django {
+        server unix:///tmp/ksdj.socket;
+    }
+    server {
+        listen              443 ssl;
+        ssl_protocols       SSLv3 TLSv1 TLSv1.1 TLSv1.2;
+        ssl_ciphers         HIGH:!aNULL:!MD5;
+        ssl on;
+        ssl_certificate /usr/local/nginx/ssl/server.crt;
+        ssl_certificate_key /usr/local/nginx/ssl/server.key;
+        server_name kickstart.example.tld;
+        charset     utf-8;
+        location /static/js/ {
+            default_type text/javascript;
+            alias /opt/www/ksdj/static/js/;
+        }
+        location /static/css/ {
+            default_type text/css;
+            alias /opt/www/ksdj/static/css/;
+        }
+        location / {
+            uwsgi_pass  django;
+            include     /usr/local/nginx/conf/uwsgi_params;
+        }
+    }
+}
+
+UWSGI
+    -lts is fine
+    cd /opt/www/
+    source bin/activate
+    cd ksdj/
+    uwsgi -s /tmp/ksdj.socket --uid=apache --gid=apache --module ksdj.wsgi --chmod-socket=600 --enable-threads
 
 
 """

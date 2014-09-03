@@ -39,6 +39,8 @@ from .settings import etc_hosts             # KSROOT, hosts
 from .settings import etc_hosts_allow       # KSROOT, hosts.allow
 from .settings import etc_pxe_clients_conf  # KSROOT, pxe_clients.conf
 
+from .settings import BK_DIR # KSROOT, .archive
+
 def vlan_validate(s, form):
     try:
         netinfo = ipcalc.Network('%s/%s' % (form.cleaned_data['network'],form.cleaned_data['cidr']))
@@ -200,11 +202,11 @@ def client_create(s,form):
     #
     # etc/hosts
     hostsfile = FileAsObj(etc_hosts, verbose=True)
-    if hostsfile.egrep('^[0-9].* %s ' % hostname):
-        messages.warning(s.request, 'Failed to update hosts file, client "%s" already exists!' % hostname)
+    if hostsfile.egrep('^[0-9].*[ \\t]%s' % hostname):
+        messages.warning(s.request, 'Failed to update %s, client "%s" already exists!' % (etc_hosts,hostname))
         return False
-    if hostsfile.egrep('^%s ' % form.instance.ip):
-        messages.warning(s.request, 'Failed to update hosts file, IP "%s" already exists!' % form.instance.ip)
+    if hostsfile.egrep('^%s[ \\t]' % form.instance.ip):
+        messages.warning(s.request, 'Failed to update %s, IP "%s" already exists!' % (etc_hosts,form.instance.ip))
         return False
     toadd = '{CLIENT_IP} {HOSTNAME}.{DOMAINNAME} {HOSTNAME} # Kickstart Client added {NOW}'.format(
         CLIENT_IP=form.instance.ip,
