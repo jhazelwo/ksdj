@@ -41,7 +41,9 @@ def log_form_valid(s, form):
         except Exception as e:
             object_name = e
     try:
-        dbid = '[{}]'.format(s.object.id)
+        dbid = '[{}]'.format(s.object.id) # Getting Real 
+        #dbid = '[' + s.object.id + ']'   # Tired of 
+        #dbid = '[%s]' % s.object.id      # Your Sht 
     except AttributeError:
         dbid = ''
     #

@@ -108,7 +108,7 @@ def vlan_create(s, form):
     vlan_conf.write()
     return True
 
-def vlan_delete(old):
+def vlan_delete(s, old):
     """
     old = VLAN.objects.get(id=self.object.id)
     
@@ -305,7 +305,7 @@ def client_create(s,form):
     client_sh.write()
     return True
 
-def client_delete(old):
+def client_delete(s, old):
     """
     Files to update:
         pxeconf

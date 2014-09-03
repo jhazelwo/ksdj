@@ -60,7 +60,7 @@ class ClientUpdateView(RequireStaffMixin, generic.UpdateView):
     def form_valid(self, form):
         """ """
         old = Client.objects.get(id=self.object.id)
-        if not kickstart.client_delete(old):
+        if not kickstart.client_delete(self, old):
             return super(ClientUpdateView, self).form_invalid(form)
         if not kickstart.client_create(self, form):
             return super(ClientUpdateView, self).form_invalid(form)

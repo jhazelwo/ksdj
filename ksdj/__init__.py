@@ -3,6 +3,12 @@
     By: nullpass
     Running:  python 3.4.1 && django 1.7c2+
 
+Bugs:
+    5.5 doesn't know what '%end' is, 5.10 probably does, 6+ certainly does; have to strip it out before .write()
+    email addresses of corporate length probably won't fit- same issue everyone else ran into and is why there are
+        so many auth extentions for Dj. Writing my own fix, importing someone elses, or going pure LDAP are all about
+        the same about of work so I'm going to go for ldap next chance I get.
+
 
 Really sick of screwing up plural/non-plural names. I know where it makes sense to add an 's', but I burned so much typo/recompile time in the past
 I'm just going to make everything singular going forward.
@@ -26,7 +32,6 @@ recent:
     named for an old url in another project, this is the start of my logging system.
     I looked at some existing options on the webernets but as happens far too often I found none of them fit the bill.
     Started off with log_form_valid which hits after form validation but before DB writing.
-    In the long term what I'd like to move this logic to a view decorator and/or use db signals and make it as flexible as possible in that way.
     Writting all of POST to the database is overkill for most cases, but kickstart is such a sensitive system (especially given this web interface
     is so new) I want to be able to track all changes to the max.
     
@@ -50,5 +55,7 @@ tftp/01-{mac address}
 
 ks/etc/dhcpd.conf
 ks/etc/vlan_XX.conf
+
+
 
 """

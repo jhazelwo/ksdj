@@ -108,7 +108,7 @@ class VLANUpdateView(RequireStaffMixin, generic.UpdateView):
         #
         if 'name' in form.cleaned_data and count < 1:
             old = VLAN.objects.get(id=self.object.id)
-            if not kickstart.vlan_delete(old):
+            if not kickstart.vlan_delete(self, old):
                 return super(VLANUpdateView, self).form_invalid(form)
             if not kickstart.vlan_create(self, form):
                 return super(VLANUpdateView, self).form_invalid(form)

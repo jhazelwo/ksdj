@@ -90,3 +90,32 @@ subnet {NETWORK} netmask {CIDR} {{
     next-server {SERVER_IP};
 }}
 """
+
+example_dhcpd.conf = """
+#
+# This file is called by an include statement in /etc/dhcp/dhcpd.conf
+#
+# DHCP Server Configuration file.
+#   see /usr/share/doc/dhcp*/dhcpd.conf.sample
+#   see 'man 5 dhcpd.conf'
+#
+allow bootp;
+allow booting;
+default-lease-time 600;
+max-lease-time 7200;
+option domain-name "google.com";
+option domain-name-servers 10.25.18.51;
+max-lease-time 604800;
+default-lease-time 604800;
+deny unknown-clients;
+
+#subnet 10.25.23.0 netmask 255.255.255.192 { }
+#subnet 10.168.248.0 netmask 255.255.248.0 { }
+
+include "/opt/kickstart/etc/pxe_clients.conf";
+include "/opt/kickstart/etc/vlan_26.conf";
+#include "/opt/kickstart/etc/vlan_35.conf";
+include "/opt/kickstart/etc/vlan_48.conf";
+
+"""
+
