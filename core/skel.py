@@ -91,7 +91,7 @@ subnet {NETWORK} netmask {CIDR} {{
 }}
 """
 
-example_dhcpd.conf = """
+example_dhcpd_conf = """
 #
 # This file is called by an include statement in /etc/dhcp/dhcpd.conf
 #

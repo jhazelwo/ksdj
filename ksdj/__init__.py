@@ -8,6 +8,7 @@ Bugs:
     email addresses of corporate length probably won't fit- same issue everyone else ran into and is why there are
         so many auth extentions for Dj. Writing my own fix, importing someone elses, or going pure LDAP are all about
         the same about of work so I'm going to go for ldap next chance I get.
+            ...that is- if I can get the py3 branch to actually compile...
 
 
 Really sick of screwing up plural/non-plural names. I know where it makes sense to add an 's', but I burned so much typo/recompile time in the past
@@ -92,6 +93,14 @@ http {
         location /static/css/ {
             default_type text/css;
             alias /opt/www/ksdj/static/css/;
+        }
+        location /static/admin/js/ {
+            default_type text/javascript;
+            alias /opt/www/ksdj/static/static/admin/js/;
+        }
+        location /static/admin/css/ {
+            default_type text/css;
+            alias /opt/www/ksdj/static/static/admin/css/;
         }
         location / {
             uwsgi_pass  django;

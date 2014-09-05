@@ -9,7 +9,7 @@
     <meta name="author" content="">
     <link rel="icon" href="../../favicon.ico">
 
-    <title>Dashboard Template for Bootstrap</title>
+    <title>[corp] Kickstart</title>
 
     <!-- Bootstrap core CSS -->
     <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
@@ -50,6 +50,7 @@
             <li><a href="{% url 'human:logout' %}">Logout</a></li>
             {% endif %}
             <li><a href="{% block help_url %}{% endblock %}">Help</a></li>
+            <li><a href="{% url 'recent:index' %}">Recent</a></li>
           </ul>
         </div>
       </div>
