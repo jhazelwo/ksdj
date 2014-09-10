@@ -30,7 +30,7 @@
         <div class="panel-body">
             <table class="table table-striped table-responsive table-condensed ">
                 {% for this in related %}
-                    <tr><td><a href="{{ this.get_absolute_url }}">{{ this }}</a></td><td> {{ this.notes }}</td></tr>
+                    <tr><td><a href="{{ this.get_absolute_url }}">{{ this }}</a></td><td> {{ this.notes|truncatewords:8 }}</td></tr>
                 {% empty %}
                     <tr><td class="text-center" colspan="2"> none </td></tr>
                 {% endfor %}

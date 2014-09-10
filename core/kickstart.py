@@ -12,6 +12,7 @@ warnins vs errors -
 
 import os
 import time
+import shutil
 from socket import gethostbyname
 from django.contrib import messages
 from vlan.models import VLAN
@@ -307,7 +308,7 @@ def client_create(s,form):
     client_sh.write()
     return True
 
-def client_delete(s, old):
+def client_delete(s, form):
     """
     Files to update:
         pxeconf
@@ -319,9 +320,9 @@ def client_delete(s, old):
         hostname_ks
         client_sh
     """
-    hostname = old.name
-    mac_addr = old.mac
-    client_ip = old.ip
+    hostname = s.old.name
+    mac_addr = s.old.mac
+    client_ip = s.old.ip
     dashmac = '-'.join(mac_addr.split(":"))
     dashmac = '01-{}'.format(dashmac)
     #
@@ -341,12 +342,28 @@ def client_delete(s, old):
                      os.path.join(CLIENT_DIR,'%s.sh' % hostname),
                      ]:
         try:
-            os.remove(thisfile)
-            print('Deleted {}'.format(thisfile))
+            newname = '{}_{}'.format(os.path.basename(thisfile), int(time.time()))
+            target = os.path.join(BK_DIR, newname)
+            shutil.move(thisfile,target)
         except Exception as e:
-            print(e)
+            messages.error(s.request, e, extra_tags='danger')
+            return False
     #
     pxeconf.write()
     hostsfile.write()
     allowfile.write()
+    return True
+
+def update_kickstart_file(s, form):
+    """
+    """
+    fname = os.path.join(KS_CONF_DIR,'%s.ks' % s.object.name)
+    this_file = FileAsObj(fname, verbose=True)
+    if this_file.Errors:
+        messages.error(s.request, this_file.Trace, extra_tags='danger')
+        return False
+    else:
+        this_file.contents = [form.cleaned_data['kickstart_file']]
+        this_file.write()
+    messages.info(s.request, this_file.Trace)
     return True

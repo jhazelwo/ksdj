@@ -13,7 +13,7 @@
                 <thead><tr><th>When</th><th>Who</th><th>What</th></tr></thead>
                 <tbody>
                 {% for this in object_list %}
-                    <tr><td>{{ this.when }}</td><td>{{ this.user_name }}</td><td>{{ this.view_name }} {{ this.object_name }}</td></tr>
+                    <tr><td>{{ this.when }}</td><td>{{ this.user_name }}</td><td><a href="{{ this.get_absolute_url }}">{{ this.view_name }} {{ this.object_name }}</a></td></tr>
                 {% endfor %}
                 </tbody>
             </table>

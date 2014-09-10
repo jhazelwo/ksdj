@@ -10,7 +10,7 @@ from recent.functions import log_form_valid
 
 from vlan.models import VLAN
 
-from .forms import ClientForm
+from .forms import ClientForm, CustomForm
 from .models import Client
 
 
@@ -24,6 +24,21 @@ class ClientDetailView(generic.DetailView):
     """ View details of a client """
     form_class, model = ClientForm, Client
     template_name = 'client/ClientDetailView.html'
+
+
+class ClientCustomView(RequireStaffMixin, generic.UpdateView):
+    """ Edit the kickstart config file for a client """
+    form_class, model = CustomForm, Client
+    template_name = 'client/ClientCustomView.html'
+    
+
+    def form_valid(self, form):
+        """ """
+        if not kickstart.update_kickstart_file(self, form):
+            return super(ClientCustomView, self).form_invalid(form)
+        messages.success(self.request, 'Changes saved!')
+        log_form_valid(self, form)
+        return super(ClientCustomView, self).form_valid(form)
 
 
 class ClientCreateView(RequireStaffMixin, generic.CreateView):
@@ -59,8 +74,8 @@ class ClientUpdateView(RequireStaffMixin, generic.UpdateView):
 
     def form_valid(self, form):
         """ """
-        old = Client.objects.get(id=self.object.id)
-        if not kickstart.client_delete(self, old):
+        self.old = Client.objects.get(id=self.object.id)
+        if not kickstart.client_delete(self, form):
             return super(ClientUpdateView, self).form_invalid(form)
         if not kickstart.client_create(self, form):
             return super(ClientUpdateView, self).form_invalid(form)

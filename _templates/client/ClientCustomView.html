@@ -1,0 +1,12 @@
+{% extends "Root.html" %}
+
+{% block ClientIndex %} class="active"{% endblock %}
+
+{% block dashboardtitle %}Edit <i>{{ object }}</i>'s Kickstart File{% endblock %}
+
+{% block content %}
+<form action="" method="post">
+    {{ form.kickstart_file }}
+    <input type="submit" class="btn btn-sm btn-success" value="Save!" /> <a class="btn btn-sm btn-info" href="{{ object.get_absolute_url }}">Cancel</a>{% csrf_token %}
+</form>
+{% endblock content %}

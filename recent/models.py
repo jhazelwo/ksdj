@@ -18,3 +18,6 @@ class Log(models.Model):
     
     def __str__(self):
         return '{} {} {}'.format(self.user_name,self.view_name,self.object_name)
+
+    def get_absolute_url(self):
+        return reverse('recent:detail', kwargs={'pk': self.id})
