@@ -15,12 +15,13 @@ class VLANForm(ModelForm):
             'notes',
         )
         model = models.VLAN
-
+    
     def __init__(self, *args, **kwargs):
         super(VLANForm, self).__init__(*args, **kwargs)
         self.fields['name'].widget.attrs['size'] = 8
         self.fields['notes'].widget.attrs['rows'] = 2
         self.fields['notes'].widget.attrs['cols'] = 64
+
 
 class VLANLockedForm(ModelForm):
     class Meta:
@@ -28,7 +29,7 @@ class VLANLockedForm(ModelForm):
             'notes',
         )
         model = models.VLAN
-
+    
     def __init__(self, *args, **kwargs):
         super(VLANLockedForm, self).__init__(*args, **kwargs)
         self.fields['notes'].widget.attrs['rows'] = 2
