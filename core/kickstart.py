@@ -365,5 +365,4 @@ def update_kickstart_file(s, form):
     else:
         this_file.contents = [form.cleaned_data['kickstart_file']]
         this_file.write()
-    messages.info(s.request, this_file.Trace)
     return True
