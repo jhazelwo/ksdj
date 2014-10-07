@@ -22,12 +22,6 @@ zerombr
 
 %include /tmp/partout
 
-services --disabled=rdisc
-
-%packages
-@Base
-@Core
-
 %pre
 #!/bin/bash
 thisDrive="`ls -ld /sys/block/sd*|grep -v usb|sort|head -1|awk -F/ '{{print $4}}'|awk '{{print $1}}'`"
@@ -39,6 +33,12 @@ part swap --fstype=swap     --size=32768           --ondisk=${{thisDrive}}
 part /    --fstype={EXT34}  --size=1 --grow        --ondisk=${{thisDrive}}
 EOF
 %end
+
+services --disabled=rdisc
+
+%packages
+@Base
+@Core
 
 %post --log=/root/post.log
 #!/bin/bash

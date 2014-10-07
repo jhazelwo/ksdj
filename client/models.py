@@ -37,10 +37,13 @@ class Client(UltraModel):
     #
     # netmask, server_ip and gateway come from vlan
     vlan = models.ForeignKey(VLAN, blank=True, null=True, related_name='client')
-
+    #
+    # data for the client's kickstart config file. template in core/skel.py:base_ks
+    kickstart_cfg = models.TextField(max_length=16384, default='#')
+    
     def get_absolute_url(self):
         return reverse('client:detail', kwargs={'pk': self.id})
-
+    
     def save(self, *args, **kwargs):
         """Force hostnames to be lowercase"""
         self.name = self.name.lower()

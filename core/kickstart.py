@@ -269,18 +269,34 @@ def client_create(s,form):
     if os.path.isfile(fname):
         messages.error(s.request, 'Failed to add client. The file "%s" already exists!' % fname, extra_tags='danger')
         return False
+    if s.object:
+        kscfg = s.old.kickstart_cfg
+        print(s.old.ip)
+        kscfg = kscfg.replace(s.old.ip, form.instance.ip)
+        kscfg = kscfg.replace(s.old.os_release, os_release)
+        kscfg = kscfg.replace(s.old.vlan.get_cidr_display(), form.instance.vlan.cidr)
+        kscfg = kscfg.replace(s.old.vlan.gateway, form.instance.vlan.gateway)
+        kscfg = kscfg.replace(s.old.name, hostname)
+        if s.old.os_release == 'el5':
+            kscfg = kscfg.replace('ext3',fstype)
+        if s.old.os_release == 'el6':
+            kscfg = kscfg.replace('ext4',fstype)
+        kscfg = kscfg.replace(s.old.vlan.server_ip, form.instance.vlan.server_ip,)
+    else:
+        kscfg = base_ks.format(
+            CLIENT_IP=form.instance.ip,
+            OS_RELEASE=os_release,
+            QUAD_MASK=form.instance.vlan.cidr,
+            GATEWAY=form.instance.vlan.gateway,
+            HOSTNAME=hostname,
+            EXT34=fstype,
+            SERVER_IP=form.instance.vlan.server_ip,
+            ROOT_PW=ks_root_password,
+            NAME_SERVERS=ks_nameservers,
+        )
+    form.instance.kickstart_cfg = kscfg
     hostname_ks = FileAsObj(fname)
-    hostname_ks.contents = base_ks.format(
-        CLIENT_IP=form.instance.ip,
-        OS_RELEASE=os_release,
-        QUAD_MASK=form.instance.vlan.cidr,
-        GATEWAY=form.instance.vlan.gateway,
-        HOSTNAME=hostname,
-        EXT34=fstype,
-        SERVER_IP=form.instance.vlan.server_ip,
-        ROOT_PW=ks_root_password,
-        NAME_SERVERS=ks_nameservers,
-    ).split("\n")
+    hostname_ks.contents = kscfg.split("\n")
     #
     # {ksroot}/etc/clients.d/{hostname}.ks - shell variables for post build scripts to use
     fname = os.path.join(CLIENT_DIR,'%s.sh' % hostname)

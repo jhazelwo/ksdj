@@ -2,53 +2,20 @@
 
     KSDJ - Django interface for Kickstart server using NFS & PXE.
     By: nullpass
-    Running:  python 3.4.1 && django 1.7c2+
+    Running:  python 3.4.1 && django 1.7
 
 Bugs:
-    5.5 doesn't know what '%end' is, 5.10 probably does, 6+ certainly does; have to strip it out before .write()
+    el5.5 doesn't know what '%end' is, 5.10 probably does, 6+ certainly does; have to strip it out before .write()
     email addresses of corporate length probably won't fit- same issue everyone else ran into and is why there are
         so many auth extentions for Dj. Writing my own fix, importing someone elses, or going pure LDAP are all about
         the same about of work so I'm going to go for ldap next chance I get.
             ...that is- if I can get the py3 branch to actually compile...
     Editing a client will overwrite any customizations done to its kickstart file.
 
-Really sick of screwing up plural/non-plural names. I know where it makes sense to add an 's', but I burned so much typo/recompile time in the past
-I'm just going to make everything singular going forward.
-
-
 TODO:
-    
-    
+    Breaking client.ks out into parts and storing them in the db to make it possible to retain customizations during client_update.
 
-recent:
-    This app is done enough for what I need, no more work on it for now.
-    named for an old url in another project, this is the start of my logging system.
-    I looked at some existing options on the webernets but as happens far too often I found none of them fit the bill.
-    Started off with log_form_valid which hits after form validation but before DB writing.
-    Writting all of POST to the database is overkill for most cases, but kickstart is such a sensitive system (especially given this web interface
-    is so new) I want to be able to track all changes to the max.
-    
-
-Files we modify: 
-
-ks/etc/hosts
-ks/etc/hosts.allow
-ks/etc/pxe_clients.conf
-ks/etc/ks.d/{hostname}.ks
-ks/etc/clients.d/{hostname}.sh
-    CLIENT_HOSTNAME="
-    CLIENT_MAC="
-    CLIENT_IPADDR="
-    CLIENT_NETMASK="
-    CLIENT_GATEWAY="
-    CLIENT_TYPE="
-    CLIENT_OS="
-    SERVER_IPADDR="
-tftp/01-{mac address}
-
-ks/etc/dhcpd.conf
-ks/etc/vlan_XX.conf
-
+    Put a 'makemigrations,migrate' script on the kickstart server and make sure folks are aware.
 
 -==-
 
@@ -115,6 +82,8 @@ UWSGI
     source bin/activate
     cd ksdj/
     uwsgi -s /tmp/ksdj.socket --uid=apache --gid=apache --module ksdj.wsgi --chmod-socket=600 --enable-threads
+
+Slightly better verions of that stuff and the custom interfaces is in /etc/init.d/Kickstart and takes args (start|stop|bounceweb)
 
 
 """
