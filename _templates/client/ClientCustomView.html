@@ -5,12 +5,8 @@
 {% block dashboardtitle %}Edit <i>{{ object }}</i>'s Kickstart File{% endblock %}
 
 {% block content %}
-    Note: manual edits saved here will be undone when the client is edited via the "Edit a Kickstart Client" function.<br>
-    This is a bug and will be fixed in the future.<br>
-    There will be a backup of your custom config on the server, have unixops get it for you if needed.<br>
-    
 <form action="" method="post">
-    {{ form.kickstart_file }}
+    {{ form.kickstart_cfg }}
     <input type="submit" class="btn btn-sm btn-success" value="Save!" /> <a class="btn btn-sm btn-info" href="{{ object.get_absolute_url }}">Cancel</a>{% csrf_token %}
 </form>
 {% endblock content %}

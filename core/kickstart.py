@@ -379,6 +379,6 @@ def update_kickstart_file(s, form):
         messages.error(s.request, this_file.Trace, extra_tags='danger')
         return False
     else:
-        this_file.contents = [form.cleaned_data['kickstart_file']]
+        this_file.contents = [form.cleaned_data['kickstart_cfg'].replace('\r','')]
         this_file.write()
     return True

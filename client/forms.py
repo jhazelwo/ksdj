@@ -35,21 +35,14 @@ class ClientForm(ModelForm):
         self.fields['notes'].widget.attrs['cols'] = 64
 
 class CustomForm(ModelForm):
-    kickstart_file = CharField(widget=Textarea)
     class Meta:
         fields = (
-            'kickstart_file',
+            'kickstart_cfg',
         )
         model = models.Client
 
     def __init__(self, *args, **kwargs):
         super(CustomForm, self).__init__(*args, **kwargs)
-        fname = os.path.join(KS_CONF_DIR,'%s.ks' % self.instance.name)
-        this_file = FileAsObj(fname, verbose=True)
-        if this_file.Errors:
-            self.fields['kickstart_file'].initial = this_file.Trace
-        else:
-            self.fields['kickstart_file'].initial = this_file
-        self.fields['kickstart_file'].widget.attrs['rows'] = 32
-        self.fields['kickstart_file'].widget.attrs['style'] = 'width: 100%; background-color: #FFB8B8'        
-        self.fields['kickstart_file'].widget.attrs['wrap'] = 'off'
+        self.fields['kickstart_cfg'].widget.attrs['rows'] = 32
+        self.fields['kickstart_cfg'].widget.attrs['style'] = 'width: 100%'
+        self.fields['kickstart_cfg'].widget.attrs['wrap'] = 'off'

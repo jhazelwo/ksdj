@@ -2,7 +2,7 @@
 
     KSDJ - Django interface for Kickstart server using NFS & PXE.
     By: nullpass
-    Running:  python 3.4.1 && django 1.7
+    Running:  python 3.4.2 && django 1.7
 
 Bugs:
     el5.5 doesn't know what '%end' is, 5.10 probably does, 6+ certainly does; have to strip it out before .write()
@@ -10,11 +10,11 @@ Bugs:
         so many auth extentions for Dj. Writing my own fix, importing someone elses, or going pure LDAP are all about
         the same about of work so I'm going to go for ldap next chance I get.
             ...that is- if I can get the py3 branch to actually compile...
-    Editing a client will overwrite any customizations done to its kickstart file.
+    A typo during client update that is syntactically valid but not logically valid (like making the IP outside the VLAN)
+        will result in some of the client files being removed putting the client in an uneditable state until the files
+        are manually restored from archive.
 
 TODO:
-    Breaking client.ks out into parts and storing them in the db to make it possible to retain customizations during client_update.
-
     Put a 'makemigrations,migrate' script on the kickstart server and make sure folks are aware.
 
 -==-
