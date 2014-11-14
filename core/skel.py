@@ -78,7 +78,7 @@ LABEL Kickstart
     menu default
     KERNEL images/{OS_RELEASE}/vmlinuz
     IPAPPEND 2
-    APPEND initrd=images/{OS_RELEASE}/initrd.img ramdisk_size=10000 ks=nfs:{SERVER_IP}:{KS_ROOT}/{HOSTNAME}.ks ksdevice=bootif
+    APPEND initrd=images/{OS_RELEASE}/initrd.img ramdisk_size=10000 ks=nfs:{SERVER_IP}:{KS_CONF_DIR}/{HOSTNAME}.ks ksdevice=bootif
 
 """
 

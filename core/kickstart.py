@@ -258,7 +258,7 @@ def client_create(s,form):
         return False
     tftp_pxe = FileAsObj(fname)
     tftp_pxe.contents = base_tftp.format(
-        KS_ROOT=KSROOT,
+        KS_CONF_DIR=KS_CONF_DIR,
         OS_RELEASE=os_release,
         HOSTNAME=hostname,
         SERVER_IP=form.instance.vlan.server_ip,
