@@ -241,10 +241,11 @@ def client_create(s,form):
     if pxeconf.grep(mac_addr):
         messages.error(s.request, 'Failed to update %s, MAC "%s" already present!' % (etc_pxe_clients_conf,mac_addr), extra_tags='danger')
         return False
-    toadd = 'host {HOSTNAME}.{DOMAINNAME} {{ hardware ethernet {MAC} ; fixed-address {HOSTNAME}.{DOMAINNAME} ;}}'.format(
+    toadd = 'host {HOSTNAME}.{DOMAINNAME} {{ hardware ethernet {MAC} ; fixed-address {CLIENT_IP} ;}}'.format(
         HOSTNAME=hostname,
         DOMAINNAME=ks_domainname,
         MAC=mac_addr,
+        CLIENT_IP=form.instance.ip,
     )
     pxeconf.add(toadd)
     pxeconf.add('}')
