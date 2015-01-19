@@ -27,33 +27,40 @@ from .skel import base_ks, base_sh, base_tftp, base_vlan
 
 # Since we cannot include the real settings.py on github
 # I have added examples for what these variables might be
-from .settings import ks_root_password  # 'password'
-from .settings import ks_nameservers    # '10.0.0.10,8.8.8.8'
-from .settings import ks_domainname     # 'mycompany.tld'
+from cfgksdj import ks_root_password  # 'password'
+from cfgksdj import ks_nameservers    # '10.0.0.10,8.8.8.8'
+from cfgksdj import ks_domainname     # 'mycompany.tld'
 
-from .settings import KSROOT        # /opt/kickstart/etc
-from .settings import KS_CONF_DIR   # KSROOT, ks.d
-from .settings import CLIENT_DIR    # KSROOT, clients.d
-from .settings import TFTP          # /opt/tftpboot/pxelinux.cfg
+from cfgksdj import KSROOT        # /opt/kickstart/etc
+from cfgksdj import KS_CONF_DIR   # KSROOT, ks.d
+from cfgksdj import CLIENT_DIR    # KSROOT, clients.d
+from cfgksdj import TFTP          # /opt/tftpboot/pxelinux.cfg
 
-from .settings import etc_hosts             # KSROOT, hosts
-from .settings import etc_hosts_allow       # KSROOT, hosts.allow
-from .settings import etc_pxe_clients_conf  # KSROOT, pxe_clients.conf
+from cfgksdj import etc_hosts             # KSROOT, hosts
+from cfgksdj import etc_hosts_allow       # KSROOT, hosts.allow
+from cfgksdj import etc_pxe_clients_conf  # KSROOT, pxe_clients.conf
 
-from .settings import BK_DIR # KSROOT, .archive
+from cfgksdj import BK_DIR # KSROOT, .archive
+
 
 def vlan_validate(s, form):
     try:
         netinfo = ipcalc.Network('%s/%s' % (form.cleaned_data['network'],form.cleaned_data['cidr']))
     except Exception as e:
-        messages.error(s.request, 'Failed to determine network information from data provided. - %s' % e, extra_tags='danger')
+        messages.error(s.request,
+                       'Failed to determine network information from data provided. - {0}'.format(e),
+                       extra_tags='danger'
+        )
         return False
     #
     if form.cleaned_data['server_ip'] not in netinfo:
-        messages.warning(s.request, 'IP address %s is not inside network %s/%s!' % (server_ip,network,cidr))
+        messages.warning(s.request, 'IP address {0} is not inside network {1}/{2}!'.format(
+            form.cleaned_data['server_ip'],
+            form.cleaned_data['network'],
+            form.cleaned_data['cidr'])
+        )
         return False
 
-    
 
 def vlan_create(s, form):
     """
@@ -111,6 +118,7 @@ def vlan_create(s, form):
     vlan_conf.write()
     return True
 
+
 def vlan_delete(s, old):
     """
     old = VLAN.objects.get(id=self.object.id)
@@ -134,6 +142,7 @@ def vlan_delete(s, old):
         except Exception as e:
             print(e)
     return True
+
 
 def client_create(s,form):
     """

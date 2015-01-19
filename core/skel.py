@@ -26,11 +26,23 @@ zerombr
 #!/bin/bash
 thisDrive="`ls -ld /sys/block/sd*|grep -v usb|sort|head -1|awk -F/ '{{print $4}}'|awk '{{print $1}}'`"
 cat << EOF >> /tmp/partout
+
+bootloader --location=mbr --driveorder=${{thisDrive}} --append="crashkernel=auto biosdevname=0 numa=off rhgb quiet"
+
 clearpart --all --drives=${{thisDrive}} --initlabel
-part /boot --fstype={EXT34} --asprimary --size=512 --ondisk=${{thisDrive}}
-bootloader --location=mbr --driveorder=${{thisDrive}} --append="biosdevname=0 numa=off"
-part swap --fstype=swap     --size=32768           --ondisk=${{thisDrive}}
-part /    --fstype={EXT34}  --size=1 --grow        --ondisk=${{thisDrive}}
+
+part /boot --fstype=ext4 --asprimary --size=512 --ondisk=${{thisDrive}}
+part pv.008018 --grow --size=1
+
+volgroup rootvg --pesize=32768 pv.008018
+
+logvol /opt --fstype={EXT34} --name=opt  --vgname=rootvg --grow --size=1
+logvol /    --fstype={EXT34} --name=root --vgname=rootvg --size=2048
+logvol swap                  --name=swap --vgname=rootvg --size=32768
+logvol /tmp --fstype={EXT34} --name=tmp  --vgname=rootvg --size=16384
+logvol /usr --fstype={EXT34} --name=usr  --vgname=rootvg --size=6144
+logvol /var --fstype={EXT34} --name=var  --vgname=rootvg --size=8192
+
 EOF
 %end
 
@@ -39,6 +51,119 @@ services --disabled=rdisc
 %packages
 @Base
 @Core
+@network-file-system-client
+@server-policy
+
+cloog-ppl
+compat-libcap1
+compat-libstdc++-33
+cpp
+gcc
+gcc-c++
+glibc-devel
+glibc-headers
+ksh
+libICE
+libSM
+libXmu
+libXt
+libXtst
+libXv
+libXxf86dga
+libXxf86misc
+libXxf86vm
+libaio-devel
+libdmx
+libgomp
+libstdc++-devel
+make
+mpfr
+ppl
+xorg-x11-utils
+xorg-x11-xauth
+
+
+elfutils-libs
+elfutils-libelf-devel
+elfutils-devel
+glibc-devel.i686
+libstdc++-devel.i686
+libaio.i686
+libaio-devel.i686
+unixODBC
+unixODBC-devel
+unixODBC.i686
+unixODBC-devel.i686
+compat-libstdc++-296-2.96-144.el6.i686
+compat-libstdc++-33-3.2.3-69.el6.i686
+compat-db
+compat-db.i686
+libxml2.i686
+libattr.i686
+libacl.i686
+xinetd
+libXp
+libXp.i686
+libXtst.i686
+gdb
+ncompress
+openldap-clients
+pam_krb5
+sssd
+procmail
+sendmail
+sysstat
+nscd
+perl
+device-mapper-multipath
+telnet
+ftp
+dump
+rmt
+compat-libtermcap.i686
+compat-libtermcap.x86_64
+dos2unix
+
+-acpid
+-avahi-dnsconfd
+-conman
+-cups
+-cyrus-imapd
+-dovecot
+-gpm
+-hplip
+-httpd
+-lm_sensors
+-mailman
+-mcstrans
+-microcode_ctl
+-postgresql
+-psacct
+-radvd
+-rhnsd
+-selinux-policy-targeted
+-setroubleshoot
+-spamassassin
+-squid
+-tog-pegasus
+-wpa_supplicant
+-ypbind
+-ypserv
+-samba-winbind
+-samba-winbind-clients
+-cifs-utils
+-samba-client
+-samba-common
+-kexec-tools
+-pm-utils
+-hal
+-hal-info
+-hal-libs
+-foomatic-db-ppds
+-foomatic-db
+-foomatic
+-cups
+%end
 
 %post --log=/root/post.log
 #!/bin/bash

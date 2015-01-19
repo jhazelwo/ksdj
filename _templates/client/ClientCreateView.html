@@ -6,7 +6,7 @@
 
 {% block content %}
 {% if form.vlan %}
-    <div class="col-sm-6">
+    <div class="col-md-8">
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h3 class="panel-title"> </h3>
@@ -35,7 +35,7 @@
             </div>
         </div>
     </div>
-<div class="col-sm-2">
+<div class="col-md-4">
     <div class="panel panel-default">
         <div class="panel-heading">
             <h3 class="panel-title">Available VLANs</h3>
@@ -52,7 +52,6 @@
         </div>
     </div>
 </div>
-
 {% else %}
     <div class="alert alert-danger" role="alert">Warning! There are no VLANs defined! <br> Please <a href="{% url 'vlan:create' %}">add a VLAN to Kickstart</a> before adding a client.</div>
 {% endif %}

@@ -1,14 +1,9 @@
 # client/forms.py
 from __future__ import absolute_import
 
-import os
 
 from django.forms import Form, ModelForm, RadioSelect, Textarea, CharField
-from django.contrib import messages
 from . import models
-
-from core.settings import KS_CONF_DIR
-from core.fileasobj import FileAsObj
 
 
 class ClientForm(ModelForm):
@@ -34,6 +29,7 @@ class ClientForm(ModelForm):
         self.fields['notes'].widget.attrs['rows'] = 2
         self.fields['notes'].widget.attrs['cols'] = 64
 
+
 class CustomForm(ModelForm):
     class Meta:
         fields = (
@@ -44,5 +40,5 @@ class CustomForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(CustomForm, self).__init__(*args, **kwargs)
         self.fields['kickstart_cfg'].widget.attrs['rows'] = 32
-        self.fields['kickstart_cfg'].widget.attrs['style'] = 'width: 100%'
+        self.fields['kickstart_cfg'].widget.attrs['style'] = 'width: 100%; font-family; monospace;'
         self.fields['kickstart_cfg'].widget.attrs['wrap'] = 'off'
