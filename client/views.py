@@ -2,7 +2,7 @@
 
 from django.views import generic
 from django.contrib import messages
-from django.shortcuts import redirect
+from django.core.urlresolvers import reverse, reverse_lazy
 
 from core import kickstart
 from human.mixins import RequireStaffMixin
@@ -75,10 +75,24 @@ class ClientUpdateView(RequireStaffMixin, generic.UpdateView):
     def form_valid(self, form):
         """ """
         self.old = Client.objects.get(id=self.object.id)
-        if not kickstart.client_delete(self, form):
+        if not kickstart.client_delete(self):
             return super(ClientUpdateView, self).form_invalid(form)
         if not kickstart.client_create(self, form):
             return super(ClientUpdateView, self).form_invalid(form)
         messages.success(self.request, 'Changes saved!')
         log_form_valid(self, form)
         return super(ClientUpdateView, self).form_valid(form)
+
+
+class ClientDeleteView(generic.DeleteView):
+    """ Delete a client """
+    form_class, model = ClientForm, Client
+    template_name = 'client/ClientDeleteView.html'
+    success_url = reverse_lazy('client:index')
+
+    def delete(self, request, *args, **kwargs):
+        self.old = self.get_object()
+        if not kickstart.client_delete(self):
+            return super(ClientDeleteView, self).get(request, *args, **kwargs)
+        messages.success(self.request, 'Client {0} removed!'.format(self.old.name))
+        return super(ClientDeleteView, self).delete(request, *args, **kwargs)

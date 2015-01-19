@@ -2,7 +2,7 @@
 
     KSDJ - Django interface for Kickstart server using NFS & PXE.
     By: nullpass
-    Running:  python 3.4.2 && django 1.7
+    Running:  python 3.4.2 && django 1.7.4
 
 Bugs:
     el5.5 doesn't know what '%end' is, 5.10 probably does, 6+ certainly does; have to strip it out before .write()

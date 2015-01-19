@@ -6,7 +6,7 @@
 
 {% block content %}
 <form action="" method="post">
-    {{ form.kickstart_cfg }}
+    {{ form.kickstart_cfg.errors }}{{ form.kickstart_cfg }}
     <input type="submit" class="btn btn-sm btn-success" value="Save!" /> <a class="btn btn-sm btn-info" href="{{ object.get_absolute_url }}">Cancel</a>{% csrf_token %}
 </form>
 {% endblock content %}

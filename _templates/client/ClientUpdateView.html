@@ -6,7 +6,7 @@
 
 {% block content %}
 {% if form.vlan %}
-    <div class="col-sm-6">
+    <div class="col-md-8">
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h3 class="panel-title"> </h3>
@@ -29,13 +29,18 @@
                             </td>
                         </tr>
                         <tr><td colspan=2><h4>Notes:</h4>{{ form.notes }}</td></tr>
-                        <tr><td colspan=2 class="text-right"><input type="submit" class="btn btn-sm btn-success" value="Save!" />{% csrf_token %}</td></tr>
+                        <tr>
+                            <td colspan=2 class="text-right">
+                                <input type="submit" class="btn btn-sm btn-success" value="Save!" /> <a class="btn btn-sm btn-info" href="{{ object.get_absolute_url }}">Cancel</a>{% csrf_token %}
+
+                            </td>
+                        </tr>
                     </table>
                 </form>
             </div>
         </div>
     </div>
-<div class="col-sm-2">
+<div class="col-md-4">
     <div class="panel panel-default">
         <div class="panel-heading">
             <h3 class="panel-title">Available VLANs</h3>

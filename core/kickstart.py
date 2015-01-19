@@ -1,7 +1,7 @@
 # core/kickstart.py
 """
 
-warnins vs errors -
+warnings vs errors -
     I've been going with the idea that errors related to input,
     like a typo in IP, should be warnings (yellow) but errors
     in the subsystem, like failure to update or create a file,
@@ -334,7 +334,7 @@ def client_create(s,form):
     client_sh.write()
     return True
 
-def client_delete(s, form):
+def client_delete(obj):
     """
     Files to update:
         pxeconf
@@ -346,9 +346,10 @@ def client_delete(s, form):
         hostname_ks
         client_sh
     """
-    hostname = s.old.name
-    mac_addr = s.old.mac
-    client_ip = s.old.ip
+    client = obj.old
+    hostname = client.name
+    mac_addr = client.mac
+    client_ip = client.ip
     dashmac = '-'.join(mac_addr.split(":"))
     dashmac = '01-{}'.format(dashmac)
     #
@@ -372,7 +373,7 @@ def client_delete(s, form):
             target = os.path.join(BK_DIR, newname)
             shutil.move(thisfile,target)
         except Exception as e:
-            messages.error(s.request, e, extra_tags='danger')
+            messages.error(obj.request, e, extra_tags='danger')
             return False
     #
     pxeconf.write()

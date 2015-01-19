@@ -20,8 +20,13 @@
                     <tr><td class="text-right"><strong>OS</strong></td><td> {{ object.get_os_release_display }}</td></tr>
                     <tr><td colspan=2><h4>Notes:</h4>{{ object.notes|urlize|linebreaksbr }}</td></tr>
                     <tr>
-                        <td class="text-left"><a href="{% url 'client:update' pk=object.id %}" class="btn btn-md btn-info">Edit</a></td>
-                        <td class="text-right">[<a href="{% url 'client:kickstart' pk=object.id %}">View/Edit Kickstart File</a>]</td>
+                        <td class="text-left">
+                            <a href="{% url 'client:update' pk=object.id %}" class="btn btn-md btn-info">Edit Client</a>
+                            <a href="{% url 'client:kickstart' pk=object.id %}" class="btn btn-md btn-info">Edit ks.cfg</a>
+                        </td>
+                        <td class="text-right">
+                            <a href="{% url 'client:delete' pk=object.id %}" class="btn btn-md btn-danger">Delete</a>
+                        </td>
                     </tr>
                 </table>
         </div>
