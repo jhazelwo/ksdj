@@ -119,7 +119,7 @@ def vlan_create(s, form):
     return True
 
 
-def vlan_delete(s, old):
+def vlan_delete(obj):
     """
     old = VLAN.objects.get(id=self.object.id)
     
@@ -130,11 +130,11 @@ def vlan_delete(s, old):
     """
     dhcpd_conf = FileAsObj(os.path.join(KSROOT, 'dhcpd.conf'))
     if dhcpd_conf.Errors:
-        messages.error(s.request, dhcpd_conf.Trace, extra_tags='danger')
+        messages.error(obj.request, dhcpd_conf.Trace, extra_tags='danger')
         return False
-    dhcpd_conf.rm(dhcpd_conf.grep('vlan_%s.conf' % old.name))
+    dhcpd_conf.rm(dhcpd_conf.grep('vlan_%s.conf' % obj.old.name))
     dhcpd_conf.write()
-    fname = os.path.join(KSROOT, 'vlan_%s.conf' % old.name)
+    fname = os.path.join(KSROOT, 'vlan_%s.conf' % obj.old.name)
     if os.path.isfile(fname):
         try:
             os.remove(fname)

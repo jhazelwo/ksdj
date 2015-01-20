@@ -5,42 +5,42 @@
 {% block dashboardtitle %}Edit a Kickstart VLAN{% endblock %}
 
 {% block content %}
-<div class="col-sm-6">
+<div class="col-md-8">
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h3 class="panel-title">{% if related %}<i>Some fields are disabled because the VLAN is being used by one or more clients.</i>{% endif %}</h3>
+            <h3 class="panel-title">{% if object.client.all %}<i>Some fields are disabled because the VLAN is being used by one or more clients.</i>{% endif %}</h3>
         </div>
         <div class="panel-body">
             <form action="" method="post">
                 <table class="table table-striped table-responsive table-condensed ">
                     <tr>
                         <td class="text-right"><strong>VLAN Number:</strong></td>
-                        <td>{% if related %}
-                                <input disabled="True" size="8" type="text" value="{{ object.name }}" />
+                        <td>{% if object.client.all %}
+                                <input disabled size="8" type="text" value="{{ object.name }}" />
                             {% else %}
                                 {{ form.name }} <em>1 to 9999</em>
                             {% endif %}{{ form.name.errors }}</td>
                     </tr>
                     <tr>
                         <td class="text-right"><strong>Network / CIDR:</strong></td>
-                        <td>{% if related %}
-                                <input disabled="True" size="15" type="text" value="{{ object.network }}" /> / <input disabled="True" size="2" type="text" value="{{ object.get_cidr_display }}" />
+                        <td>{% if object.client.all %}
+                                <input disabled size="15" type="text" value="{{ object.network }}" /> / <input disabled size="2" type="text" value="{{ object.get_cidr_display }}" />
                             {% else %}
                                 {{ form.network }} / {{ form.cidr }} <em>ex: "192.168.1.0 / 24"</em>
                             {% endif %} {{ form.network.errors }}{{ form.cidr.errors }}</td>
                     </tr>
                     <tr>
                         <td class="text-right"><strong>Gateway:</strong></td>
-                        <td>{% if related %}
-                                <input disabled="True" size="15" type="text" value="{{ object.gateway }}" />
+                        <td>{% if object.client.all %}
+                                <input disabled size="15" type="text" value="{{ object.gateway }}" />
                             {% else %}
                                 {{ form.gateway }} <em>Leave empty to just use lowest host.</em>
                             {% endif %} {{ form.gateway.errors }}</td>
                     </tr>
                     <tr>
                         <td class="text-right"><strong>Kickstart Server IP</strong></td>
-                        <td>{% if related %}
-                                <input disabled="True" size="15" type="text" value="{{ object.server_ip }}" />
+                        <td>{% if object.client.all %}
+                                <input disabled size="15" type="text" value="{{ object.server_ip }}" />
                             {% else %}
                                 {{ form.server_ip }} <em>(The IP that the kickstart server will use, not the client IP){{ form.server_ip.errors }}</em>
                             {% endif %}</td>
@@ -54,7 +54,7 @@
         </div>
     </div>
 </div>
-<div class="col-sm-2">
+<div class="col-md-4">
     <div class="panel panel-default">
         <div class="panel-heading">
             <h3 class="panel-title">CIDR to QuadDot</h3>

@@ -2,7 +2,7 @@
 
 from django.views import generic
 from django.contrib import messages
-from django.core.urlresolvers import reverse, reverse_lazy
+from django.core.urlresolvers import reverse_lazy
 
 from core import kickstart
 from human.mixins import RequireStaffMixin
