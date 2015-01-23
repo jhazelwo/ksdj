@@ -13,11 +13,29 @@
         <div class="panel-body">
             <form action="" method="post">
                 <table class="table table-striped table-responsive table-condensed ">
-                    <tr><td class="text-right"><strong>VLAN Number:</strong></td><td>{{ form.name }} <em>0 to 9999</em> {{ form.name.errors }}</td></tr>
-                    <tr><td class="text-right"><strong>Network / CIDR:</strong></td><td> {{ form.network }} / {{ form.cidr }} <em>ex: "192.168.1.0 / 24"</em> {{ form.network.errors }}{{ form.cidr.errors }}</td></tr>
-                    <tr><td class="text-right"><strong>Gateway:</strong></td><td> {{ form.gateway }} <em>Leave empty to just use lowest host.</em> {{ form.gateway.errors }}</td></tr>
-                    <tr><td class="text-right"><strong>Kickstart Server IP</strong></td><td> {{ form.server_ip }} <em>(The IP that the kickstart server will use, not the client IP){{ form.server_ip.errors }}</em></td></tr>
-                    <tr><td colspan=2><h4>Notes:</h4>{{ form.notes }}</td></tr>
+                    <tr>
+                        <td class="text-right"><strong>VLAN Number:</strong></td>
+                        <td>{{ form.name }} <em>0 to 9999</em> {{ form.name.errors }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-right"><strong>Network / CIDR:</strong></td>
+                        <td> {{ form.network }} / {{ form.cidr }} <em>ex: "192.168.1.0 / 24"</em> {{ form.network.errors }}{{ form.cidr.errors }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-right"><strong>Gateway:</strong></td>
+                        <td> {{ form.gateway }} <em>Leave empty to just use lowest host.</em> {{ form.gateway.errors }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-right"><strong>Kickstart Server IP</strong></td>
+                        <td> {{ form.server_ip }} <em>(The IP that the kickstart server will use, not the client IP){{ form.server_ip.errors }}</em></td>
+                    </tr>
+                    <tr>
+                        <td class="text-right"><strong>Active?</strong></td>
+                        <td>{{ form.active }}<em>Check this to enable the VLAN's interface for PXE clients. Only 1 VLAN can be active at a time.</em></td>
+                    </tr>
+                    <tr>
+                        <td colspan=2><h4>Notes:</h4>{{ form.notes }}</td>
+                    </tr>
                     <tr>
                         <td class="col-md-4 bg-warning">When adding a VLAN to kickstart be sure you plumb and configure the corresponding interface on the Kickstart server itself.</td>
                         <td class="text-right">{% if user.is_authenticated %}<input type="submit" class="btn btn-sm btn-success" value="Add!" />{% csrf_token %}{% endif %}</td>

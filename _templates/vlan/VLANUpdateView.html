@@ -45,6 +45,10 @@
                                 {{ form.server_ip }} <em>(The IP that the kickstart server will use, not the client IP){{ form.server_ip.errors }}</em>
                             {% endif %}</td>
                     </tr>
+                    <tr>
+                        <td class="text-right"><strong>Active?</strong></td>
+                        <td>{{ form.active }}<em>Check this to enable the VLAN's interface for PXE clients. Only 1 VLAN can be active at a time.</em></td>
+                    </tr>
                     <tr><td colspan=2><h4>Notes:</h4>{{ form.notes }}</td></tr>
                     <tr>
                         <td class="text-left"><a href="{{ object.get_absolute_url }}" class="btn btn-sm btn-info">Cancel</a></td>

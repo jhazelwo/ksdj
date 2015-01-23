@@ -1,10 +1,16 @@
 # vlan/models.py
+import os
 
 from django.db import models
-from django.core.validators import RegexValidator
+from django.contrib import messages
 from django.core.urlresolvers import reverse
+from django.core.validators import RegexValidator
 
 from core.tools import UltraModel
+from core.fileasobj import FileAsObj
+
+from cfgksdj import KSROOT
+
 
 class VLAN(UltraModel):
     """    """
@@ -30,8 +36,35 @@ class VLAN(UltraModel):
         max_length=15,
         choices=CIDR_CHOICES,
     )
-    # semi-optional, if left blank VLANCreateView will set it to Network.host_first (lowhost)
-    gateway = models.CharField(validators=[RegexValidator('^((\d){1,3}.){3}(\d){1,3}$')], max_length=15, blank=True, null=False, unique=True)
+    # semi-optional, if left blank VLANCreateView will set it to Network.host_first (low host)
+    gateway = models.CharField(validators=[RegexValidator('^((\d){1,3}.){3}(\d){1,3}$')],
+                               max_length=15,
+                               blank=True,
+                               null=False,
+                               unique=True)
+    #
+    # Defines if given VLAN is plumbed.
+    active = models.BooleanField(default=False)
 
     def get_absolute_url(self):
-        return reverse('vlan:detail', kwargs={'pk' : self.id})
+        return reverse('vlan:detail', kwargs={'pk': self.id})
+
+    def activate(self, request):
+        """
+        Update KSROOT/eth1.sh with this VLAN and set self.active to True.
+        """
+        this_file = FileAsObj(os.path.join(KSROOT, 'eth1.sh'))
+        this_file.contents = []
+        this_file.add('/sbin/ifconfig eth1 inet {IP} netmask {MASK} up'.format(
+            IP=self.server_ip,
+            MASK=self.cidr,
+        ))
+        this_file.add('/sbin/service dhcpd restart')
+        this_file.write()
+
+        if this_file.Errors:
+            messages.error(request, this_file.Trace, extra_tags='danger')
+            return False
+        self.active = True
+        self.save()
+        return True

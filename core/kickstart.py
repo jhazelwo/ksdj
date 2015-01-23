@@ -79,7 +79,7 @@ def vlan_create(s, form):
     vlanname = form.cleaned_data['name']
     #
     try:
-        netinfo = ipcalc.Network('%s/%s' % (network,cidr))
+        netinfo = ipcalc.Network('%s/%s' % (network, cidr))
     except Exception as e:
         messages.error(s.request, 'Failed to determine network information from data provided. - %s' % e, extra_tags='danger')
         return False
@@ -207,16 +207,16 @@ def client_create(s,form):
         return False
     #
     if form.instance.ip not in ipcalc.Network('%s/%s' % (form.instance.vlan.network,form.instance.vlan.get_cidr_display())):
-        messages.warning(s.request, 'IP %s not valid for VLAN %s. Please check address and/or add needed VLAN.' % (form.instance.ip,form.instance.vlan))
+        messages.warning(s.request, 'IP %s not valid for VLAN %s. Please check address and/or add needed VLAN.' % (form.instance.ip, form.instance.vlan))
         return False
     #
     # etc/hosts
     hostsfile = FileAsObj(etc_hosts, verbose=True)
     if hostsfile.egrep('^[0-9].*[ \\t]%s' % hostname):
-        messages.warning(s.request, 'Failed to update %s, client "%s" already exists!' % (etc_hosts,hostname))
+        messages.warning(s.request, 'Failed to update %s, client "%s" already exists!' % (etc_hosts, hostname))
         return False
     if hostsfile.egrep('^%s[ \\t]' % form.instance.ip):
-        messages.warning(s.request, 'Failed to update %s, IP "%s" already exists!' % (etc_hosts,form.instance.ip))
+        messages.warning(s.request, 'Failed to update %s, IP "%s" already exists!' % (etc_hosts, form.instance.ip))
         return False
     toadd = '{CLIENT_IP} {HOSTNAME}.{DOMAINNAME} {HOSTNAME} # Kickstart Client added {NOW}'.format(
         CLIENT_IP=form.instance.ip,
@@ -288,9 +288,9 @@ def client_create(s,form):
         kscfg = kscfg.replace(s.old.vlan.gateway, form.instance.vlan.gateway)
         kscfg = kscfg.replace(s.old.name, hostname)
         if s.old.os_release == 'el5':
-            kscfg = kscfg.replace('ext3',fstype)
+            kscfg = kscfg.replace('ext3', fstype)
         if s.old.os_release == 'el6':
-            kscfg = kscfg.replace('ext4',fstype)
+            kscfg = kscfg.replace('ext4', fstype)
         kscfg = kscfg.replace(s.old.vlan.server_ip, form.instance.vlan.server_ip,)
     else:
         kscfg = base_ks.format(
@@ -309,7 +309,7 @@ def client_create(s,form):
     hostname_ks.contents = kscfg.split("\n")
     #
     # {ksroot}/etc/clients.d/{hostname}.ks - shell variables for post build scripts to use
-    fname = os.path.join(CLIENT_DIR,'%s.sh' % hostname)
+    fname = os.path.join(CLIENT_DIR, '%s.sh' % hostname)
     if os.path.isfile(fname):
         messages.error(s.request, 'Failed to add client. The file "%s" already exists!' % fname, extra_tags='danger')
         return False
@@ -333,6 +333,7 @@ def client_create(s,form):
     hostname_ks.write()
     client_sh.write()
     return True
+
 
 def client_delete(obj):
     """
@@ -381,10 +382,11 @@ def client_delete(obj):
     allowfile.write()
     return True
 
+
 def update_kickstart_file(s, form):
     """
     """
-    fname = os.path.join(KS_CONF_DIR,'%s.ks' % s.object.name)
+    fname = os.path.join(KS_CONF_DIR, '%s.ks' % s.object.name)
     this_file = FileAsObj(fname, verbose=True)
     if this_file.Errors:
         messages.error(s.request, this_file.Trace, extra_tags='danger')

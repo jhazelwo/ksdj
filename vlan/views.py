@@ -25,13 +25,17 @@ class VLANCreateView(RequireStaffMixin, generic.CreateView):
     form_class, model = VLANForm, VLAN
     template_name = 'vlan/VLANCreateView.html'
 
-    def form_invalid(self,form):
+    def form_invalid(self, form):
         messages.warning(self.request, 'Error! Please check your input.')
         return super(VLANCreateView, self).form_invalid(form)
     
     def form_valid(self, form):
         if not kickstart.vlan_create(self, form):
             return super(VLANCreateView, self).form_invalid(form)
+        if form.cleaned_data['active']:
+            VLAN.objects.all().update(active=False)
+            self.object = form.save(commit=False)
+            self.object.activate(self.request)
         messages.success(self.request, 'VLAN %s added to Kickstart!' % form.cleaned_data['name'])
         log_form_valid(self, form)
         return super(VLANCreateView, self).form_valid(form)
@@ -62,7 +66,8 @@ class VLANUpdateView(RequireStaffMixin, generic.UpdateView):
         then render most of the fields as disabled
         Additional enforcement exists in form_valid()
         """
-        if Client.objects.filter(vlan=self.object.id).count():
+        # if Client.objects.filter(vlan=self.object.id).count():
+        if self.object.client.count() is not 0:
             return VLANLockedForm
         else:
             return VLANForm
@@ -83,21 +88,18 @@ class VLANUpdateView(RequireStaffMixin, generic.UpdateView):
         
         The kickstart.vlan_ functions will generate error messages as needed.
         """
-        count = Client.objects.filter(vlan=self.object.id).count()
-        if count > 0:
-            for this in ['name', 'network', 'cidr', 'gateway', 'server_ip']:
-                if this in form.cleaned_data:
-                    messages.error(self.request,
-                                   'VLAN is being used by one or more clients, unable to change.',
-                                   extra_tags='danger')
-                    return super(VLANUpdateView, self).form_invalid(form)
         #
-        if 'name' in form.cleaned_data and count < 1:
+        if self.object.client.count() is 0:
             self.old = VLAN.objects.get(id=self.object.id)
             if not kickstart.vlan_delete(self):
                 return super(VLANUpdateView, self).form_invalid(form)
             if not kickstart.vlan_create(self, form):
                 return super(VLANUpdateView, self).form_invalid(form)
+        #
+        if form.cleaned_data['active']:
+            VLAN.objects.all().update(active=False)
+            self.object.activate(self.request)
+        #
         messages.success(self.request, 'Changes saved!')
         log_form_valid(self, form)
         return super(VLANUpdateView, self).form_valid(form)

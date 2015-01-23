@@ -29,6 +29,10 @@
                     <td> {{ object.server_ip }}</td>
                 </tr>
                 <tr>
+                    <td class="text-right"><strong>Active?</strong></td>
+                    <td> {{ object.active }}</td>
+                </tr>
+                <tr>
                     <td colspan=2><h4>Notes:</h4>{{ object.notes|urlize|linebreaksbr }}</td>
                 </tr>
                 <tr>

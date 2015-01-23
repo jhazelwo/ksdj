@@ -13,6 +13,7 @@ class VLANForm(ModelForm):
             'gateway',
             'server_ip',
             'notes',
+            'active',
         )
         model = models.VLAN
     
@@ -27,6 +28,7 @@ class VLANLockedForm(ModelForm):
     class Meta:
         fields = (
             'notes',
+            'active',
         )
         model = models.VLAN
     
