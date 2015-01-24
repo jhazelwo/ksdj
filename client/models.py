@@ -8,6 +8,7 @@ from vlan.models import VLAN
 
 from core.tools import UltraModel
 
+
 class Client(UltraModel):
     """
     """
@@ -41,6 +42,9 @@ class Client(UltraModel):
     # data for the client's kickstart config file. template in core/skel.py:base_ks
     kickstart_cfg = models.TextField(max_length=16384, default='#')
     
+    class Meta:
+        ordering = ['-created', ]
+
     def get_absolute_url(self):
         return reverse('client:detail', kwargs={'pk': self.id})
     

@@ -40,25 +40,23 @@ from cfgksdj import etc_hosts             # KSROOT, hosts
 from cfgksdj import etc_hosts_allow       # KSROOT, hosts.allow
 from cfgksdj import etc_pxe_clients_conf  # KSROOT, pxe_clients.conf
 
-from cfgksdj import BK_DIR # KSROOT, .archive
+from cfgksdj import BK_DIR  # KSROOT, .archive
 
 
 def vlan_validate(s, form):
     try:
-        netinfo = ipcalc.Network('%s/%s' % (form.cleaned_data['network'],form.cleaned_data['cidr']))
+        netinfo = ipcalc.Network('%s/%s' % (form.cleaned_data['network'], form.cleaned_data['cidr']))
     except Exception as e:
         messages.error(s.request,
                        'Failed to determine network information from data provided. - {0}'.format(e),
-                       extra_tags='danger'
-        )
+                       extra_tags='danger')
         return False
     #
     if form.cleaned_data['server_ip'] not in netinfo:
         messages.warning(s.request, 'IP address {0} is not inside network {1}/{2}!'.format(
             form.cleaned_data['server_ip'],
             form.cleaned_data['network'],
-            form.cleaned_data['cidr'])
-        )
+            form.cleaned_data['cidr']))
         return False
 
 
@@ -85,7 +83,7 @@ def vlan_create(s, form):
         return False
     #
     if server_ip not in netinfo:
-        messages.warning(s.request, 'IP address %s is not inside network %s/%s!' % (server_ip,network,cidr))
+        messages.warning(s.request, 'IP address %s is not inside network %s/%s!' % (server_ip, network, cidr))
         return False
     #
     # Set gateway
@@ -144,7 +142,7 @@ def vlan_delete(obj):
     return True
 
 
-def client_create(s,form):
+def client_create(s, form):
     """
     1. Get IP if Null
     2. Figure out VLAN from IP
@@ -173,13 +171,15 @@ def client_create(s,form):
         try:
             form.instance.ip = gethostbyname(hostname)
         except Exception as e:
-            messages.warning(s.request, 'DNS lookup failed for "%s". Please correct hostname, update DNS, or specify IP. - %s' % (hostname,e))
+            msg = 'DNS lookup failed for "{0}". Please update DNS or specify IP. - {1}'.format(hostname, e)
+            messages.warning(s.request, msg)
             return False
     #
     #
     ip_count = Client.objects.filter(ip=form.instance.ip).count()
     if ip_count is not 1 and ip_count is not 0:
-        messages.error(s.request, 'Critical error! IP %s in use by multiple clients. Contact Sr. Kickstart Admin!' % (form.instance.ip), extra_tags='danger')
+        msg = 'Critical error! IP {0} in use by multiple clients. Contact Sr. Kickstart Admin!'.format(form.instance.ip)
+        messages.error(s.request, msg, extra_tags='danger')
         return False
     if ip_count == 1:
         """
@@ -193,21 +193,25 @@ def client_create(s,form):
             # s{elf}.object.id isn't set; this must be a client add then.
             me = None
         if me != Client.objects.filter(ip=form.instance.ip).get().id:
-            messages.warning(s.request, 'DNS returned "%s", but that IP is already in use by another kickstart client.' % form.instance.ip)
+            msg = 'DNS returned "%s", but that IP is already in use by another kickstart client.' % form.instance.ip
+            messages.warning(s.request, msg)
             return False
         # else; the IP that's in use is the IP of the client we're changing and that's OK.
     #
     if not form.cleaned_data['vlan']:
         for thisv in VLAN.objects.all():
-            getvlan = ipcalc.Network('%s/%s' % (thisv.network,thisv.get_cidr_display()))
+            getvlan = ipcalc.Network('%s/%s' % (thisv.network, thisv.get_cidr_display()))
             if form.instance.ip in getvlan:
                 form.instance.vlan = thisv
     if not form.instance.vlan:
-        messages.warning(s.request, 'IP %s not valid for any known vlans. Please check address and/or add needed VLAN.' % form.instance.ip)
+        msg = 'IP %s not valid for any known vlans. Please check address and/or add needed VLAN.' % form.instance.ip
+        messages.warning(s.request, msg)
         return False
     #
-    if form.instance.ip not in ipcalc.Network('%s/%s' % (form.instance.vlan.network,form.instance.vlan.get_cidr_display())):
-        messages.warning(s.request, 'IP %s not valid for VLAN %s. Please check address and/or add needed VLAN.' % (form.instance.ip, form.instance.vlan))
+    testing_network = ipcalc.Network('%s/%s' % (form.instance.vlan.network, form.instance.vlan.get_cidr_display()))
+    if form.instance.ip not in testing_network:
+        msg = 'IP %s not valid for VLAN %s.'.format(form.instance.ip, form.instance.vlan)
+        messages.warning(s.request, msg)
         return False
     #
     # etc/hosts
@@ -229,7 +233,8 @@ def client_create(s,form):
     # etc/hosts.allow
     allowfile = FileAsObj(etc_hosts_allow, verbose=True)
     if allowfile.egrep('^ALL: ALL@%s : ALLOW' % form.instance.ip):
-        messages.error(s.request, 'Failed to update %s, IP "%s" already present!' % (etc_hosts_allow,form.instance.ip), extra_tags='danger')
+        messages.error(s.request, 'Failed to update %s, IP "%s" already present!' % (etc_hosts_allow,form.instance.ip),
+                       extra_tags='danger')
         return False
     allowfile.add('ALL: ALL@%s : ALLOW' % form.instance.ip)
     #
@@ -245,10 +250,12 @@ def client_create(s,form):
     """
     pxeconf = FileAsObj(etc_pxe_clients_conf)
     if pxeconf.grep(' %s.%s ' % (hostname, ks_domainname) ):
-        messages.error(s.request, 'Failed to update %s, host "%s" already present!' % (etc_pxe_clients_conf,hostname), extra_tags='danger')
+        messages.error(s.request, 'Failed to update %s, host "%s" already present!' % (etc_pxe_clients_conf,hostname),
+                       extra_tags='danger')
         return False
     if pxeconf.grep(mac_addr):
-        messages.error(s.request, 'Failed to update %s, MAC "%s" already present!' % (etc_pxe_clients_conf,mac_addr), extra_tags='danger')
+        messages.error(s.request, 'Failed to update %s, MAC "%s" already present!' % (etc_pxe_clients_conf,mac_addr),
+                       extra_tags='danger')
         return False
     toadd = 'host {HOSTNAME}.{DOMAINNAME} {{ hardware ethernet {MAC} ; fixed-address {CLIENT_IP} ;}}'.format(
         HOSTNAME=hostname,
@@ -262,7 +269,7 @@ def client_create(s,form):
     # tftpboot/pxe.default/01-mac-address.lower().replace(":","-")
     dashmac = '-'.join(mac_addr.split(":"))
     dashmac = '01-{}'.format(dashmac)
-    fname = os.path.join(TFTP,dashmac)
+    fname = os.path.join(TFTP, dashmac)
     if os.path.isfile(fname):
         messages.error(s.request, 'Failed to add client. The file "%s" already exists!' % fname, extra_tags='danger')
         return False
@@ -275,7 +282,7 @@ def client_create(s,form):
     ).split("\n")
     #
     # {ksroot}/etc/ks.d/{hostname}.ks - kickstart config file
-    fname = os.path.join(KS_CONF_DIR,'%s.ks' % hostname)
+    fname = os.path.join(KS_CONF_DIR, '%s.ks' % hostname)
     if os.path.isfile(fname):
         messages.error(s.request, 'Failed to add client. The file "%s" already exists!' % fname, extra_tags='danger')
         return False
@@ -356,7 +363,7 @@ def client_delete(obj):
     #
     pxeconf = FileAsObj(etc_pxe_clients_conf)
     pxeconf.rm(pxeconf.grep(mac_addr))
-    pxeconf.rm(pxeconf.grep(' {}.{} '.format(hostname,ks_domainname)))
+    pxeconf.rm(pxeconf.grep(' {}.{} '.format(hostname, ks_domainname)))
     #
     hostsfile = FileAsObj(etc_hosts, verbose=True)
     hostsfile.rm(hostsfile.grep('{} # Kickstart Client '.format(hostname)))
@@ -365,9 +372,9 @@ def client_delete(obj):
     allowfile = FileAsObj(etc_hosts_allow, verbose=True)
     allowfile.rm(allowfile.grep(client_ip))
     #
-    for thisfile in [os.path.join(TFTP,dashmac),
-                     os.path.join(KS_CONF_DIR,'%s.ks' % hostname),
-                     os.path.join(CLIENT_DIR,'%s.sh' % hostname),
+    for thisfile in [os.path.join(TFTP, dashmac),
+                     os.path.join(KS_CONF_DIR, '%s.ks' % hostname),
+                     os.path.join(CLIENT_DIR, '%s.sh' % hostname),
                      ]:
         try:
             newname = '{}_{}'.format(os.path.basename(thisfile), int(time.time()))

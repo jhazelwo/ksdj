@@ -8,7 +8,7 @@
 <div class="col-md-8">
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h3 class="panel-title">{% if object.client.all %}<i>Some fields are disabled because the VLAN is being used by one or more clients.</i>{% endif %}</h3>
+            <h3 class="panel-title text-right">{% if object.client.all %}<i>Some fields are disabled because the VLAN is in use by a client.</i>{% endif %}</h3>
         </div>
         <div class="panel-body">
             <form action="" method="post">

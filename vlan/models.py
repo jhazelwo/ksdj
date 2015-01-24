@@ -13,10 +13,21 @@ from cfgksdj import KSROOT
 
 
 class VLAN(UltraModel):
-    """    """
+    """
+
+    """
     name = models.CharField(validators=[RegexValidator('^[0-9]+$')], max_length=6, unique=True)
-    network = models.CharField(validators=[RegexValidator('^((\d){1,3}.){3}(\d){1,3}$')], max_length=15, unique=True)
-    server_ip = models.CharField(validators=[RegexValidator('^((\d){1,3}.){3}(\d){1,3}$')], max_length=15, unique=True)
+    network = models.CharField(validators=[RegexValidator('^(10|172|192).(\d){1,3}.(\d){1,3}.(\d){1,3}$')],
+                               max_length=15,
+                               unique=True)
+    server_ip = models.CharField(validators=[RegexValidator('^(10|172|192).(\d){1,3}.(\d){1,3}.(\d){1,3}$')],
+                                 max_length=15,
+                                 unique=True)
+    gateway = models.CharField(validators=[RegexValidator('^(10|172|192).(\d){1,3}.(\d){1,3}.(\d){1,3}$')],
+                               max_length=15,
+                               blank=True,
+                               null=False,
+                               unique=True)
     CIDR_CHOICES = (
         ('', ' '),
         ('255.255.255.240', '28'),
@@ -36,15 +47,12 @@ class VLAN(UltraModel):
         max_length=15,
         choices=CIDR_CHOICES,
     )
-    # semi-optional, if left blank VLANCreateView will set it to Network.host_first (low host)
-    gateway = models.CharField(validators=[RegexValidator('^((\d){1,3}.){3}(\d){1,3}$')],
-                               max_length=15,
-                               blank=True,
-                               null=False,
-                               unique=True)
     #
     # Defines if given VLAN is plumbed.
     active = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-created', ]
 
     def get_absolute_url(self):
         return reverse('vlan:detail', kwargs={'pk': self.id})

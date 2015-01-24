@@ -14,12 +14,9 @@ will result in some of the client files being removed putting the client in an u
 manually restored from archive.
 
 ### TODO:
-* Remove gateway/kickstart_IP from VLANCreateView; just use whatever IP they give plus CIDR to determine real
-        netwotk data, then set network, low host and kickstart_ip.
-        Let user change kickstart_IP after creation, but by default set it to high_host-2
-* Add an is_active attribute to vlans to determine which VLAN is running on eth1;
-        this should be site-unique (1 at a time)
-        During is_active() write a trigger file that the system looks for to plumb the right IP and bounce dhcpd.
+* Review all error checking in kickstart.py, there's quite a bit that can be removed such as:
+    * If the tftpboot file for a MAC doesn't exist, client_delete shouldn't fail.
+* kickstart.py needs some serious linter love.
 * Be sure to add all of the 'create new virtualenv and compile these things' to this file during next
         major upgrade
 * Put a 'makemigrations,migrate' script on the kickstart server and make sure folks are aware.
@@ -31,10 +28,7 @@ Deployment notes:
 ### VIRTUALENV:
 * get the latest from their github repo. v1.9.x doesn't work with py3.4, latest does.
 
-### NGINX:
-* -1.7.4 works ok
-
-
+### NGINX 1.7.4:
     ./configure --without-http_rewrite_module --with-http_ssl_module --with-debug && make && make install
     mkdir /usr/local/nginx/ssl/
     cd /usr/local/nginx/ssl/
@@ -43,49 +37,49 @@ Deployment notes:
     openssl rsa -in server.key.org -out server.key
     openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
 
+### ksdj_nginx.conf  
 
-* ksdj_nginx.conf
-
-
-    user apache;
-    events {
-        worker_connections  1024;
+```
+user apache;
+events {
+    worker_connections  1024;
+}
+http {
+    upstream django {
+        server unix:///tmp/ksdj.socket;
     }
-    http {
-        upstream django {
-            server unix:///tmp/ksdj.socket;
+    server {
+        listen              443 ssl;
+        ssl_protocols       SSLv3 TLSv1 TLSv1.1 TLSv1.2;
+        ssl_ciphers         HIGH:!aNULL:!MD5;
+        ssl on;
+        ssl_certificate /usr/local/nginx/ssl/server.crt;
+        ssl_certificate_key /usr/local/nginx/ssl/server.key;
+        server_name kickstart.example.tld;
+        charset     utf-8;
+        location /static/js/ {
+            default_type text/javascript;
+            alias /opt/www/ksdj/static/js/;
         }
-        server {
-            listen              443 ssl;
-            ssl_protocols       SSLv3 TLSv1 TLSv1.1 TLSv1.2;
-            ssl_ciphers         HIGH:!aNULL:!MD5;
-            ssl on;
-            ssl_certificate /usr/local/nginx/ssl/server.crt;
-            ssl_certificate_key /usr/local/nginx/ssl/server.key;
-            server_name kickstart.example.tld;
-            charset     utf-8;
-            location /static/js/ {
-                default_type text/javascript;
-                alias /opt/www/ksdj/static/js/;
-            }
-            location /static/css/ {
-                default_type text/css;
-                alias /opt/www/ksdj/static/css/;
-            }
-            location /static/admin/js/ {
-                default_type text/javascript;
-                alias /opt/www/ksdj/static/static/admin/js/;
-            }
-            location /static/admin/css/ {
-                default_type text/css;
-                alias /opt/www/ksdj/static/static/admin/css/;
-            }
-            location / {
-                uwsgi_pass  django;
-                include     /usr/local/nginx/conf/uwsgi_params;
-            }
-        }
-    }
+        location /static/css/ {
+            default_type text/css;
+            alias /opt/www/ksdj/static/css/;
+        }  
+        location /static/admin/js/ {  
+            default_type text/javascript;  
+            alias /opt/www/ksdj/static/static/admin/js/;  
+        }  
+        location /static/admin/css/ {  
+            default_type text/css;  
+            alias /opt/www/ksdj/static/static/admin/css/;  
+        }  
+        location / {  
+            uwsgi_pass  django;  
+            include     /usr/local/nginx/conf/uwsgi_params;  
+        }  
+    }  
+}  
+```
 
 #### UWSGI
     -lts is fine
@@ -93,6 +87,7 @@ Deployment notes:
     source bin/activate
     cd ksdj/
     uwsgi -s /tmp/ksdj.socket --uid=apache --gid=apache --module ksdj.wsgi --chmod-socket=600 --enable-threads
+
 
 * Slightly better verions of that stuff and the custom interfaces is in /etc/init.d/Kickstart and takes args 
 (start|stop|bounceweb)

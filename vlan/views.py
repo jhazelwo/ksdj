@@ -4,25 +4,25 @@ from django.views import generic
 from django.contrib import messages
 from django.core.urlresolvers import reverse_lazy
 
-from core import kickstart
+from core import kickstart, ipcalc
 from human.mixins import RequireStaffMixin
 from recent.functions import log_form_valid
 
 from client.models import Client
 
-from .forms import VLANForm, VLANLockedForm
+from . import forms
 from .models import VLAN
 
 
 class Index(generic.ListView):
     """ A list of existing VLANs """
-    form_class, model = VLANForm, VLAN
+    model = VLAN
     template_name = 'vlan/index.html'
 
 
 class VLANCreateView(RequireStaffMixin, generic.CreateView):
     """ Add a VLAN to Kickstart """
-    form_class, model = VLANForm, VLAN
+    form_class, model = forms.Create, VLAN
     template_name = 'vlan/VLANCreateView.html'
 
     def form_invalid(self, form):
@@ -30,20 +30,31 @@ class VLANCreateView(RequireStaffMixin, generic.CreateView):
         return super(VLANCreateView, self).form_invalid(form)
     
     def form_valid(self, form):
-        if not kickstart.vlan_create(self, form):
-            return super(VLANCreateView, self).form_invalid(form)
+        """
+        This is ugly, fo reals, like so ugly.
+        """
+        self.object = form.save(commit=False)
         if form.cleaned_data['active']:
             VLAN.objects.all().update(active=False)
-            self.object = form.save(commit=False)
             self.object.activate(self.request)
-        messages.success(self.request, 'VLAN %s added to Kickstart!' % form.cleaned_data['name'])
+        try:
+            netinfo = ipcalc.Network('%s/%s' % (form.cleaned_data['network'], form.cleaned_data['cidr']))
+        except Exception as e:
+            messages.error(s.request, 'Failed to determine network information from data provided. - %s' % e, extra_tags='danger')
+            return False
+        form.cleaned_data['network'] = self.object.network = netinfo.network()
+        form.cleaned_data['gateway'] = self.object.gateway = netinfo.host_first()
+        form.cleaned_data['server_ip'] = self.object.server_ip = ipcalc.IP(int(netinfo.host_last()) - 2, version=4)
+        if not kickstart.vlan_create(self, form):
+            return super(VLANCreateView, self).form_invalid(form)
+        messages.success(self.request, 'VLAN {0} added to Kickstart!'.format(self.object))
         log_form_valid(self, form)
         return super(VLANCreateView, self).form_valid(form)
 
 
 class VLANDetailView(generic.DetailView):
     """ View a VLAN's details """
-    form_class, model = VLANForm, VLAN
+    model = VLAN
     template_name = 'vlan/VLANDetailView.html'
     
     def get_context_data(self, **kwargs):
@@ -57,7 +68,7 @@ class VLANUpdateView(RequireStaffMixin, generic.UpdateView):
     Edit a Kickstart VLAN
     If there are clients using this vlan, give warning and do not allow IP changes, only notes.
     """
-    form_class, model = VLANForm, VLAN
+    form_class, model = forms.Update, VLAN
     template_name = 'vlan/VLANUpdateView.html'
     
     def get_form_class(self):
@@ -68,9 +79,9 @@ class VLANUpdateView(RequireStaffMixin, generic.UpdateView):
         """
         # if Client.objects.filter(vlan=self.object.id).count():
         if self.object.client.count() is not 0:
-            return VLANLockedForm
+            return forms.LockedUpdate
         else:
-            return VLANForm
+            return forms.Update
 
     def form_invalid(self, form):
         """
@@ -107,7 +118,7 @@ class VLANUpdateView(RequireStaffMixin, generic.UpdateView):
 
 class VLANDeleteView(generic.DeleteView):
     """ Delete a VLAN """
-    form_class, model = VLANForm, VLAN
+    model = VLAN
     template_name = 'vlan/VLANDeleteView.html'
     success_url = reverse_lazy('vlan:index')
 
