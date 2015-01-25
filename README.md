@@ -1,26 +1,25 @@
 KSDJ - A Django-based web interface for Kickstart server using NFS & PXE.
 =============================================================
-Running:  python 3.4.2 && django 1.7.4
---------------------------------------
-
+**Uses [Python 3.4.2](https://www.python.org/download/releases/3.4.2/) and [Django 1.7.3](https://www.djangoproject.com/download/1.7.3/tarball/)**
 
 ### Bugs:
-* el5.5 doesn't know what '%end' is, 5.10 probably does, 6+ certainly does; have to strip it out before .write()
+* el5.5 throws a mysterious error during kick if '%end' is in hostname.ks.
 * email addresses of corporate length probably won't fit- same issue everyone else ran into and is why there are so many 
-auth extentions for Dj. Writing my own fix, importing someone elses, or going pure LDAP are all about the same about of 
+auth extensions for Dj. Writing my own fix, importing someone elses, or going pure LDAP are all about the same about of 
 work so I'm going to go for ldap next chance I get. (that is- if I can get the py3 branch to actually compile)
 * A typo during client update that is syntactically valid but not logically valid (like making the IP outside the VLAN) 
-will result in some of the client files being removed putting the client in an uneditable state until the files are 
+will result in some of the client files being removed putting the client in an un-editable state until the files are 
 manually restored from archive.
 
 ### TODO:
-* Review all error checking in kickstart.py, there's quite a bit that can be removed such as:
-    * If the tftpboot file for a MAC doesn't exist, client_delete shouldn't fail.
-* kickstart.py needs some serious linter love.
-* Be sure to add all of the 'create new virtualenv and compile these things' to this file during next
-        major upgrade
+* Review all error checking in kickstart.py, there's quite a bit that can be removed.
+* Remove messages.* from kickstart.py, replace with raise msg; and pipe exceptions to messages via the views.
+* I believe there are places where we can replace (self, form) with just (self)
+* Write a function that takes (form) and return a tuple of the needed data:  
+ `network, cidr, name, server_ip = get_data_from_form(form)`
+* Be sure to add all of the 'create new virtualenv and compile these things' to this file during next major upgrade.
 * Put a 'makemigrations,migrate' script on the kickstart server and make sure folks are aware.
-
+* Refactor all of the views and template names to reduce redundant words and match my conventions in other projects. 
 
 Deployment notes:
 ----------------
@@ -89,6 +88,5 @@ http {
     uwsgi -s /tmp/ksdj.socket --uid=apache --gid=apache --module ksdj.wsgi --chmod-socket=600 --enable-threads
 
 
-* Slightly better verions of that stuff and the custom interfaces is in /etc/init.d/Kickstart and takes args 
+* Slightly better versions of that stuff and the custom interfaces is in /etc/init.d/Kickstart and takes args 
 (start|stop|bounceweb)
-

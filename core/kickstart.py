@@ -1,12 +1,7 @@
 # core/kickstart.py
 """
 
-warnings vs errors -
-    I've been going with the idea that errors related to input,
-    like a typo in IP, should be warnings (yellow) but errors
-    in the subsystem, like failure to update or create a file,
-    should be errors (red). 
-
+This is the main engine for updating files on the kickstart server with client and vlan data.
 
 """
 
@@ -42,25 +37,28 @@ from cfgksdj import etc_pxe_clients_conf  # KSROOT, pxe_clients.conf
 
 from cfgksdj import BK_DIR  # KSROOT, .archive
 
-
-def vlan_validate(s, form):
+"""
+# Nothing uses this right now.
+def vlan_validate(view, form):
     try:
-        netinfo = ipcalc.Network('%s/%s' % (form.cleaned_data['network'], form.cleaned_data['cidr']))
+        network_cidr = '{0}/{1}'.format(form.cleaned_data['network'], form.cleaned_data['cidr'])
+        netinfo = ipcalc.Network(network_cidr)
     except Exception as e:
-        messages.error(s.request,
+        messages.error(view.request,
                        'Failed to determine network information from data provided. - {0}'.format(e),
                        extra_tags='danger')
         return False
     #
     if form.cleaned_data['server_ip'] not in netinfo:
-        messages.warning(s.request, 'IP address {0} is not inside network {1}/{2}!'.format(
+        messages.warning(view.request, 'IP address {0} is not inside network {1}/{2}!'.format(
             form.cleaned_data['server_ip'],
             form.cleaned_data['network'],
             form.cleaned_data['cidr']))
         return False
+"""
 
 
-def vlan_create(s, form):
+def vlan_create(view, form):
     """
     Add a VLAN to Kickstart
     
@@ -77,13 +75,17 @@ def vlan_create(s, form):
     vlanname = form.cleaned_data['name']
     #
     try:
-        netinfo = ipcalc.Network('%s/%s' % (network, cidr))
+        netinfo = ipcalc.Network('{0}/{1}'.format(network, cidr))
     except Exception as e:
-        messages.error(s.request, 'Failed to determine network information from data provided. - %s' % e, extra_tags='danger')
+        messages.error(view.request,
+                       'Unable to determine network from data provided. - {0}'.format(e),
+                       extra_tags='danger')
         return False
     #
     if server_ip not in netinfo:
-        messages.warning(s.request, 'IP address %s is not inside network %s/%s!' % (server_ip, network, cidr))
+        messages.error(view.request,
+                       'IP {0} is not inside network {1}/{2}!'.format(server_ip, network, cidr),
+                       extra_tags='danger')
         return False
     #
     # Set gateway
@@ -94,22 +96,24 @@ def vlan_create(s, form):
     # KSROOT, dhcpd.conf
     dhcpd_conf = FileAsObj(os.path.join(KSROOT, 'dhcpd.conf'))
     if dhcpd_conf.Errors:
-        messages.error(s.request, dhcpd_conf.Trace, extra_tags='danger')
+        messages.error(view.request, dhcpd_conf.Trace, extra_tags='danger')
         return False
-    dhcpd_conf.add('include "%s/vlan_%s.conf";' % (KSROOT, vlanname))
+    dhcpd_conf.add('include "{0}/vlan_{1}.conf";'.format(KSROOT, vlanname))
     #
     # KSROOT, vlan_XX.conf
-    fname = os.path.join(KSROOT, 'vlan_%s.conf' % vlanname)
-    if os.path.isfile(fname):
-        messages.error(s.request, 'Failed to add VLAN config. The file "vlan_%s.conf" already exists!' % vlanname, extra_tags='danger')
+    file = os.path.join(KSROOT, 'vlan_{0}.conf'.format(vlanname))
+    if os.path.isfile(file):
+        messages.error(view.request,
+                       'Failed to add VLAN; "{0}" already exists!'.format(file),
+                       extra_tags='danger')
         return False
-    vlan_conf = FileAsObj(fname)
+    vlan_conf = FileAsObj(file)
     vlan_conf.contents = base_vlan.format(
         NETWORK=network,
         CIDR=cidr,
         GATEWAY=gateway,
         SERVER_IP=server_ip,
-    ).split("\n")
+    ).split('\n')
     #
     # All is OK, save changes
     dhcpd_conf.write()
@@ -117,32 +121,35 @@ def vlan_create(s, form):
     return True
 
 
-def vlan_delete(obj):
+def vlan_delete(view):
     """
-    old = VLAN.objects.get(id=self.object.id)
+    view.old = VLAN.objects.get(id=self.object.id)
     
     Remove vlan from dhcpd.conf and delete vlan_XX.conf file
     OK if vlan not found or file not found.
     The only real error state is if we are unable to edit dhcpd.conf
     
     """
+    file_name = 'vlan_{0}.conf'.format(view.old.name)
+    #
     dhcpd_conf = FileAsObj(os.path.join(KSROOT, 'dhcpd.conf'))
     if dhcpd_conf.Errors:
-        messages.error(obj.request, dhcpd_conf.Trace, extra_tags='danger')
+        messages.error(view.request, dhcpd_conf.Trace, extra_tags='danger')
         return False
-    dhcpd_conf.rm(dhcpd_conf.grep('vlan_%s.conf' % obj.old.name))
-    dhcpd_conf.write()
-    fname = os.path.join(KSROOT, 'vlan_%s.conf' % obj.old.name)
+    dhcpd_conf.rm(dhcpd_conf.grep(file_name))
+    if not dhcpd_conf.virgin:
+        dhcpd_conf.write()
+    #
+    fname = os.path.join(KSROOT, file_name)
     if os.path.isfile(fname):
         try:
             os.remove(fname)
-            print('Deleted {}'.format(fname))
-        except Exception as e:
-            print(e)
+        except:
+            pass
     return True
 
 
-def client_create(s, form):
+def client_create(view, form):
     """
     1. Get IP if Null
     2. Figure out VLAN from IP
@@ -172,14 +179,14 @@ def client_create(s, form):
             form.instance.ip = gethostbyname(hostname)
         except Exception as e:
             msg = 'DNS lookup failed for "{0}". Please update DNS or specify IP. - {1}'.format(hostname, e)
-            messages.warning(s.request, msg)
+            messages.warning(view.request, msg)
             return False
     #
     #
     ip_count = Client.objects.filter(ip=form.instance.ip).count()
     if ip_count is not 1 and ip_count is not 0:
         msg = 'Critical error! IP {0} in use by multiple clients. Contact Sr. Kickstart Admin!'.format(form.instance.ip)
-        messages.error(s.request, msg, extra_tags='danger')
+        messages.error(view.request, msg, extra_tags='danger')
         return False
     if ip_count == 1:
         """
@@ -188,55 +195,59 @@ def client_create(s, form):
         """
         try:
             # if this is a client edit, this will pass
-            me = s.object.id
+            me = view.object.id
         except NameError:
-            # s{elf}.object.id isn't set; this must be a client add then.
+            # view.object.id isn't set; this must be a client add then.
             me = None
         if me != Client.objects.filter(ip=form.instance.ip).get().id:
-            msg = 'DNS returned "%s", but that IP is already in use by another kickstart client.' % form.instance.ip
-            messages.warning(s.request, msg)
+            msg = 'DNS returned "{0}", but that IP already in use by another kickstart client.'.format(form.instance.ip)
+            messages.warning(view.request, msg)
             return False
         # else; the IP that's in use is the IP of the client we're changing and that's OK.
     #
     if not form.cleaned_data['vlan']:
         for thisv in VLAN.objects.all():
-            getvlan = ipcalc.Network('%s/%s' % (thisv.network, thisv.get_cidr_display()))
+            network_cidr = '{0}/{1}'.format(thisv.network, thisv.get_cidr_display())
+            getvlan = ipcalc.Network(network_cidr)
             if form.instance.ip in getvlan:
                 form.instance.vlan = thisv
     if not form.instance.vlan:
-        msg = 'IP %s not valid for any known vlans. Please check address and/or add needed VLAN.' % form.instance.ip
-        messages.warning(s.request, msg)
+        msg = 'IP {0} not valid for any known vlans!'.format(form.instance.ip)
+        messages.warning(view.request, msg)
         return False
     #
-    testing_network = ipcalc.Network('%s/%s' % (form.instance.vlan.network, form.instance.vlan.get_cidr_display()))
-    if form.instance.ip not in testing_network:
-        msg = 'IP %s not valid for VLAN %s.'.format(form.instance.ip, form.instance.vlan)
-        messages.warning(s.request, msg)
+    testing_net = ipcalc.Network('{0}/{1}'.format(form.instance.vlan.network, form.instance.vlan.get_cidr_display()))
+    if form.instance.ip not in testing_net:
+        msg = 'IP {0} not valid for VLAN {1}.'.format(form.instance.ip, form.instance.vlan)
+        messages.warning(view.request, msg)
         return False
     #
     # etc/hosts
     hostsfile = FileAsObj(etc_hosts, verbose=True)
-    if hostsfile.egrep('^[0-9].*[ \\t]%s' % hostname):
-        messages.warning(s.request, 'Failed to update %s, client "%s" already exists!' % (etc_hosts, hostname))
+    if hostsfile.egrep('^[0-9].*[ \\t]{0}'.format(hostname)):
+        messages.warning(view.request,
+                         'Failed to update {0}, client "{1}" already exists!'.format(etc_hosts, hostname))
         return False
-    if hostsfile.egrep('^%s[ \\t]' % form.instance.ip):
-        messages.warning(s.request, 'Failed to update %s, IP "%s" already exists!' % (etc_hosts, form.instance.ip))
+    if hostsfile.egrep('^{0}[ \\t]'.format(form.instance.ip)):
+        messages.warning(view.request,
+                         'Failed to update {0}, IP "{1}" already exists!'.format(etc_hosts, form.instance.ip))
         return False
     toadd = '{CLIENT_IP} {HOSTNAME}.{DOMAINNAME} {HOSTNAME} # Kickstart Client added {NOW}'.format(
         CLIENT_IP=form.instance.ip,
         HOSTNAME=hostname,
         DOMAINNAME=ks_domainname,
-        NOW=time.strftime("%Y.%m.%d", time.localtime()),
+        NOW=time.strftime('%Y.%m.%d', time.localtime()),
     )
     hostsfile.add(toadd)
     #
     # etc/hosts.allow
     allowfile = FileAsObj(etc_hosts_allow, verbose=True)
-    if allowfile.egrep('^ALL: ALL@%s : ALLOW' % form.instance.ip):
-        messages.error(s.request, 'Failed to update %s, IP "%s" already present!' % (etc_hosts_allow,form.instance.ip),
+    if allowfile.egrep('^ALL: ALL@{0} : ALLOW'.format(form.instance.ip)):
+        messages.error(view.request,
+                       'Failed to update {0}, IP "{1}" already present!'.format(etc_hosts_allow, form.instance.ip),
                        extra_tags='danger')
         return False
-    allowfile.add('ALL: ALL@%s : ALLOW' % form.instance.ip)
+    allowfile.add('ALL: ALL@{0} : ALLOW'.format(form.instance.ip))
     #
     # etc/pxe_clients.conf
     """ 
@@ -249,12 +260,14 @@ def client_create(s, form):
     Unique add host, don't use verbose mode- and add "}" at the end of the file.
     """
     pxeconf = FileAsObj(etc_pxe_clients_conf)
-    if pxeconf.grep(' %s.%s ' % (hostname, ks_domainname) ):
-        messages.error(s.request, 'Failed to update %s, host "%s" already present!' % (etc_pxe_clients_conf,hostname),
+    if pxeconf.grep(' {0}.{1} '.format(hostname, ks_domainname)):
+        messages.error(view.request,
+                       'Failed to update {0}, host "{1}" already present!'.format(etc_pxe_clients_conf, hostname),
                        extra_tags='danger')
         return False
     if pxeconf.grep(mac_addr):
-        messages.error(s.request, 'Failed to update %s, MAC "%s" already present!' % (etc_pxe_clients_conf,mac_addr),
+        messages.error(view.request,
+                       'Failed to update {0}, MAC "{1}" already present!'.format(etc_pxe_clients_conf, mac_addr),
                        extra_tags='danger')
         return False
     toadd = 'host {HOSTNAME}.{DOMAINNAME} {{ hardware ethernet {MAC} ; fixed-address {CLIENT_IP} ;}}'.format(
@@ -267,11 +280,13 @@ def client_create(s, form):
     pxeconf.add('}')
     #
     # tftpboot/pxe.default/01-mac-address.lower().replace(":","-")
-    dashmac = '-'.join(mac_addr.split(":"))
+    dashmac = '-'.join(mac_addr.split(':'))
     dashmac = '01-{}'.format(dashmac)
     fname = os.path.join(TFTP, dashmac)
     if os.path.isfile(fname):
-        messages.error(s.request, 'Failed to add client. The file "%s" already exists!' % fname, extra_tags='danger')
+        messages.error(view.request,
+                       'Failed to add client. The file "{0}" already exists!'.format(fname),
+                       extra_tags='danger')
         return False
     tftp_pxe = FileAsObj(fname)
     tftp_pxe.contents = base_tftp.format(
@@ -279,26 +294,27 @@ def client_create(s, form):
         OS_RELEASE=os_release,
         HOSTNAME=hostname,
         SERVER_IP=form.instance.vlan.server_ip,
-    ).split("\n")
+    ).split('\n')
     #
     # {ksroot}/etc/ks.d/{hostname}.ks - kickstart config file
-    fname = os.path.join(KS_CONF_DIR, '%s.ks' % hostname)
+    fname = os.path.join(KS_CONF_DIR, '{0}.ks'.format(hostname))
     if os.path.isfile(fname):
-        messages.error(s.request, 'Failed to add client. The file "%s" already exists!' % fname, extra_tags='danger')
+        messages.error(view.request,
+                       'Failed to add client. The file "{0}" already exists!'.format(fname),
+                       extra_tags='danger')
         return False
-    if s.object:
-        kscfg = s.old.kickstart_cfg
-        print(s.old.ip)
-        kscfg = kscfg.replace(s.old.ip, form.instance.ip)
-        kscfg = kscfg.replace(s.old.os_release, os_release)
-        kscfg = kscfg.replace(s.old.vlan.get_cidr_display(), form.instance.vlan.cidr)
-        kscfg = kscfg.replace(s.old.vlan.gateway, form.instance.vlan.gateway)
-        kscfg = kscfg.replace(s.old.name, hostname)
-        if s.old.os_release == 'el5':
+    if view.object:
+        kscfg = view.old.kickstart_cfg
+        kscfg = kscfg.replace(view.old.ip, form.instance.ip)
+        kscfg = kscfg.replace(view.old.os_release, os_release)
+        kscfg = kscfg.replace(view.old.vlan.get_cidr_display(), form.instance.vlan.cidr)
+        kscfg = kscfg.replace(view.old.vlan.gateway, form.instance.vlan.gateway)
+        kscfg = kscfg.replace(view.old.name, hostname)
+        if view.old.os_release == 'el5':
             kscfg = kscfg.replace('ext3', fstype)
-        if s.old.os_release == 'el6':
+        if view.old.os_release == 'el6':
             kscfg = kscfg.replace('ext4', fstype)
-        kscfg = kscfg.replace(s.old.vlan.server_ip, form.instance.vlan.server_ip,)
+        kscfg = kscfg.replace(view.old.vlan.server_ip, form.instance.vlan.server_ip,)
     else:
         kscfg = base_ks.format(
             CLIENT_IP=form.instance.ip,
@@ -313,12 +329,14 @@ def client_create(s, form):
         )
     form.instance.kickstart_cfg = kscfg
     hostname_ks = FileAsObj(fname)
-    hostname_ks.contents = kscfg.split("\n")
+    hostname_ks.contents = kscfg.split('\n')
     #
     # {ksroot}/etc/clients.d/{hostname}.ks - shell variables for post build scripts to use
-    fname = os.path.join(CLIENT_DIR, '%s.sh' % hostname)
+    fname = os.path.join(CLIENT_DIR, '{0}.sh'.format(hostname))
     if os.path.isfile(fname):
-        messages.error(s.request, 'Failed to add client. The file "%s" already exists!' % fname, extra_tags='danger')
+        messages.error(view.request,
+                       'Failed to add client. The file "{0}" already exists!'.format(fname),
+                       extra_tags='danger')
         return False
     client_sh = FileAsObj(fname)
     client_sh.contents = base_sh.format(
@@ -330,7 +348,7 @@ def client_create(s, form):
         BUILD_TYPE=build_type,
         OS_RELEASE=os_release,
         SERVER_IP=form.instance.vlan.server_ip,
-    ).split("\n")
+    ).split('\n')
     #
     # If you made it this far everything went OK. Now write all the files!
     pxeconf.write()
@@ -358,7 +376,7 @@ def client_delete(obj):
     hostname = client.name
     mac_addr = client.mac
     client_ip = client.ip
-    dashmac = '-'.join(mac_addr.split(":"))
+    dashmac = '-'.join(mac_addr.split(':'))
     dashmac = '01-{}'.format(dashmac)
     #
     pxeconf = FileAsObj(etc_pxe_clients_conf)
@@ -373,16 +391,17 @@ def client_delete(obj):
     allowfile.rm(allowfile.grep(client_ip))
     #
     for thisfile in [os.path.join(TFTP, dashmac),
-                     os.path.join(KS_CONF_DIR, '%s.ks' % hostname),
-                     os.path.join(CLIENT_DIR, '%s.sh' % hostname),
+                     os.path.join(KS_CONF_DIR, '{0}.ks'.format(hostname)),
+                     os.path.join(CLIENT_DIR, '{0}.sh'.format(hostname)),
                      ]:
-        try:
-            newname = '{}_{}'.format(os.path.basename(thisfile), int(time.time()))
-            target = os.path.join(BK_DIR, newname)
-            shutil.move(thisfile,target)
-        except Exception as e:
-            messages.error(obj.request, e, extra_tags='danger')
-            return False
+        if os.path.isfile(thisfile):
+            try:
+                newname = '{}_{}'.format(os.path.basename(thisfile), int(time.time()))
+                target = os.path.join(BK_DIR, newname)
+                shutil.move(thisfile, target)
+            except Exception as e:
+                messages.error(obj.request, e, extra_tags='danger')
+                return False
     #
     pxeconf.write()
     hostsfile.write()
@@ -390,15 +409,15 @@ def client_delete(obj):
     return True
 
 
-def update_kickstart_file(s, form):
+def update_kickstart_file(view, form):
     """
+    Update The kickstart config file for a client: ./etc/ks.d/hostname.ks
     """
-    fname = os.path.join(KS_CONF_DIR, '%s.ks' % s.object.name)
+    fname = os.path.join(KS_CONF_DIR, '{0}.ks'.format(view.object.name))
     this_file = FileAsObj(fname, verbose=True)
     if this_file.Errors:
-        messages.error(s.request, this_file.Trace, extra_tags='danger')
+        messages.error(view.request, this_file.Trace, extra_tags='danger')
         return False
-    else:
-        this_file.contents = [form.cleaned_data['kickstart_cfg'].replace('\r','')]
-        this_file.write()
+    this_file.contents = [form.cleaned_data['kickstart_cfg'].replace('\r', '')]
+    this_file.write()
     return True
