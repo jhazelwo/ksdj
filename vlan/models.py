@@ -22,11 +22,13 @@ class VLAN(UltraModel):
                                unique=True)
     server_ip = models.CharField(validators=[RegexValidator('^(10|172|192).(\d){1,3}.(\d){1,3}.(\d){1,3}$')],
                                  max_length=15,
+                                 blank=True,  # Can be empty in the form,
+                                 null=False,  # but must be something in the database.
                                  unique=True)
     gateway = models.CharField(validators=[RegexValidator('^(10|172|192).(\d){1,3}.(\d){1,3}.(\d){1,3}$')],
                                max_length=15,
-                               blank=True,
-                               null=False,
+                               blank=True,   # Can be empty in the form,
+                               null=False,   # but must be something in the database.
                                unique=True)
     CIDR_CHOICES = (
         ('', ' '),

@@ -37,116 +37,94 @@ from cfgksdj import etc_pxe_clients_conf  # KSROOT, pxe_clients.conf
 
 from cfgksdj import BK_DIR  # KSROOT, .archive
 
-"""
-# Nothing uses this right now.
-def vlan_validate(view, form):
-    try:
-        network_cidr = '{0}/{1}'.format(form.cleaned_data['network'], form.cleaned_data['cidr'])
-        netinfo = ipcalc.Network(network_cidr)
-    except Exception as e:
-        messages.error(view.request,
-                       'Failed to determine network information from data provided. - {0}'.format(e),
-                       extra_tags='danger')
-        return False
-    #
-    if form.cleaned_data['server_ip'] not in netinfo:
-        messages.warning(view.request, 'IP address {0} is not inside network {1}/{2}!'.format(
-            form.cleaned_data['server_ip'],
-            form.cleaned_data['network'],
-            form.cleaned_data['cidr']))
-        return False
-"""
 
-
-def vlan_create(view, form):
+def vlan_create(form):
     """
     Add a VLAN to Kickstart
     
     1. Validate IP information
-    2. If no gateway then set to lowest host
-    3. Add 'include vlan_XX.conf' line to dhcpd.conf file
-    4. Create vlan_XX.conf file
+    2. Set gateway to lowest host
+    3. Set kickstart server IP to highest host minus 2.
+    4. Add 'include vlan_XX.conf' line to dhcpd.conf file
+    5. Create vlan_XX.conf file
     
-    If there is a problem generate an error and return False 
+    On error raise an exception, let the view handle it.
+
+    :param: form - A cleaned form object from view.form_valid()
+    :return: form
     """
-    network = form.cleaned_data['network']
-    cidr = form.cleaned_data['cidr']
-    server_ip = form.cleaned_data['server_ip']
-    vlanname = form.cleaned_data['name']
+    netinfo = ipcalc.Network('{0}/{1}'.format(form.instance.network, form.instance.cidr), version=4)
     #
-    try:
-        netinfo = ipcalc.Network('{0}/{1}'.format(network, cidr))
-    except Exception as e:
-        messages.error(view.request,
-                       'Unable to determine network from data provided. - {0}'.format(e),
-                       extra_tags='danger')
-        return False
+    # Set model data to actual network, it's often entered incorrectly.
+    form.instance.network = netinfo.network()
     #
-    if server_ip not in netinfo:
-        messages.error(view.request,
-                       'IP {0} is not inside network {1}/{2}!'.format(server_ip, network, cidr),
-                       extra_tags='danger')
-        return False
-    #
-    # Set gateway
-    if not form.cleaned_data['gateway']:
+    # Gateway and ServerIP are auto-selected during VLAN.Create, but specified during VLAN.Update.
+    if 'gateway' not in form.cleaned_data:
         form.instance.gateway = netinfo.host_first()
-    gateway = form.instance.gateway
+    else:
+        #
+        # If user entered no gateway during VLAN.Update then set to lowest host.
+        if not form.cleaned_data['gateway']:
+            form.instance.gateway = netinfo.host_first()
+        elif form.cleaned_data['gateway'] not in netinfo:
+            raise ValueError('Gateway is outside this VLAN!')
     #
-    # KSROOT, dhcpd.conf
-    dhcpd_conf = FileAsObj(os.path.join(KSROOT, 'dhcpd.conf'))
+    if 'server_ip' not in form.cleaned_data or not form.cleaned_data['server_ip']:
+        #
+        # No server IP given, default to
+        form.instance.server_ip = ipcalc.IP(int(netinfo.host_last()) - 2, version=4)
+    else:
+        if form.cleaned_data['server_ip'] not in netinfo:
+            raise ValueError('Kickstart Server IP is outside this VLAN!')
+    #
+    name = form.cleaned_data['name']
+    dhcpd_conf = FileAsObj(os.path.join(KSROOT, 'dhcpd.conf'))  # /opt/kickstart/etc/dhcpd.conf
     if dhcpd_conf.Errors:
-        messages.error(view.request, dhcpd_conf.Trace, extra_tags='danger')
-        return False
-    dhcpd_conf.add('include "{0}/vlan_{1}.conf";'.format(KSROOT, vlanname))
+        raise ValueError(dhcpd_conf.Trace)
+    dhcpd_conf.add('include "{0}/vlan_{1}.conf";'.format(KSROOT, name))
     #
-    # KSROOT, vlan_XX.conf
-    file = os.path.join(KSROOT, 'vlan_{0}.conf'.format(vlanname))
-    if os.path.isfile(file):
-        messages.error(view.request,
-                       'Failed to add VLAN; "{0}" already exists!'.format(file),
-                       extra_tags='danger')
-        return False
+    file = os.path.join(KSROOT, 'vlan_{0}.conf'.format(name))  # /opt/kickstart/etc/vlan_{name}.conf
     vlan_conf = FileAsObj(file)
     vlan_conf.contents = base_vlan.format(
-        NETWORK=network,
-        CIDR=cidr,
-        GATEWAY=gateway,
-        SERVER_IP=server_ip,
+        NETWORK=form.instance.network,
+        CIDR=form.instance.cidr,
+        GATEWAY=form.instance.gateway,
+        SERVER_IP=form.instance.server_ip,
     ).split('\n')
     #
-    # All is OK, save changes
+    # All is OK, save changes and return form.
     dhcpd_conf.write()
     vlan_conf.write()
-    return True
+    return form
 
 
-def vlan_delete(view):
+def vlan_delete(obj):
     """
-    view.old = VLAN.objects.get(id=self.object.id)
-    
     Remove vlan from dhcpd.conf and delete vlan_XX.conf file
-    OK if vlan not found or file not found.
-    The only real error state is if we are unable to edit dhcpd.conf
-    
+    OK if vlan not found.
+    The only real errors are if we are unable to edit dhcpd.conf or if there a clients in the VLAN.
+
+    No return values; just raise an exception if there's a problem.
     """
-    file_name = 'vlan_{0}.conf'.format(view.old.name)
+    if obj.client.count() is not 0:
+        raise ValueError('Unable to delete, there are clients in this vlan!')
+    file_name = 'vlan_{0}.conf'.format(obj.name)
     #
-    dhcpd_conf = FileAsObj(os.path.join(KSROOT, 'dhcpd.conf'))
+    dhcpd_conf = FileAsObj(os.path.join(KSROOT, 'dhcpd.conf'))  # /opt/kickstart/etc/dhcpd.conf
     if dhcpd_conf.Errors:
-        messages.error(view.request, dhcpd_conf.Trace, extra_tags='danger')
-        return False
+        raise ValueError(dhcpd_conf.Trace)
+    #
     dhcpd_conf.rm(dhcpd_conf.grep(file_name))
     if not dhcpd_conf.virgin:
         dhcpd_conf.write()
     #
-    fname = os.path.join(KSROOT, file_name)
+    fname = os.path.join(KSROOT, file_name)  # /opt/kickstart/etc/vlan_{name}.conf
     if os.path.isfile(fname):
         try:
             os.remove(fname)
         except:
             pass
-    return True
+    return
 
 
 def client_create(view, form):
