@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse_lazy
 
 from core import kickstart, ipcalc
+from core.tools import featherfail
 from human.mixins import RequireStaffMixin
 from recent.functions import log_form_valid
 
@@ -23,7 +24,7 @@ class Index(generic.ListView):
 class VLANCreateView(RequireStaffMixin, generic.CreateView):
     """ Add a VLAN to Kickstart """
     form_class, model = forms.Create, VLAN
-    template_name = 'vlan/VLANCreateView.html'
+    template_name = 'vlan/create.html'
 
     def form_invalid(self, form):
         messages.warning(self.request, 'Error! Please check your input.')
@@ -38,19 +39,19 @@ class VLANCreateView(RequireStaffMixin, generic.CreateView):
             form = kickstart.vlan_create(form)
             if form.cleaned_data['active']:
                 VLAN.objects.all().update(active=False)
-                self.object.activate(self.request)
+                self.object.activate()
+            messages.success(self.request, 'VLAN {0} added to Kickstart!'.format(self.object))
+            log_form_valid(self, form)
+            return super(VLANCreateView, self).form_valid(form)
         except Exception as msg:
-            messages.error(self.request, msg, extra_tags='danger')
-            return super(VLANCreateView, self).form_invalid(form)
-        messages.success(self.request, 'VLAN {0} added to Kickstart!'.format(self.object))
-        log_form_valid(self, form)
-        return super(VLANCreateView, self).form_valid(form)
+            featherfail(self, msg)
+        return super(VLANCreateView, self).form_invalid(form)
 
 
 class VLANDetailView(generic.DetailView):
     """ View a VLAN's details """
     model = VLAN
-    template_name = 'vlan/VLANDetailView.html'
+    template_name = 'vlan/detail.html'
     
     def get_context_data(self, **kwargs):
         context = super(VLANDetailView, self).get_context_data(**kwargs)
@@ -63,7 +64,7 @@ class VLANUpdateView(RequireStaffMixin, generic.UpdateView):
     Edit a Kickstart VLAN
     """
     form_class, model = forms.Update, VLAN
-    template_name = 'vlan/VLANUpdateView.html'
+    template_name = 'vlan/update.html'
     
     def get_form_class(self):
         """
@@ -86,35 +87,33 @@ class VLANUpdateView(RequireStaffMixin, generic.UpdateView):
         """
         Dj says the data is OK, so ask kickstart.py to update the files.
         """
-        #
-        if self.object.client.count() is 0:
-            try:
+        try:
+            if self.object.client.count() is 0:
                 kickstart.vlan_delete(self.object)
                 form = kickstart.vlan_create(form)
-                if form.cleaned_data['active']:
-                    VLAN.objects.all().update(active=False)
-                    self.object.activate(self.request)
-            except Exception as msg:
-                messages.error(self.request, msg, extra_tags='danger')
-                return super(VLANUpdateView, self).form_invalid(form)
-        #
-        messages.success(self.request, 'Changes saved!')
-        log_form_valid(self, form)
-        return super(VLANUpdateView, self).form_valid(form)
+            if form.cleaned_data['active']:
+                VLAN.objects.all().update(active=False)
+                self.object.activate()
+            messages.success(self.request, 'Changes saved!')
+            log_form_valid(self, form)
+            return super(VLANUpdateView, self).form_valid(form)
+        except Exception as msg:
+            featherfail(self, msg)
+        return super(VLANUpdateView, self).form_invalid(form)
 
 
 class VLANDeleteView(generic.DeleteView):
     """ Delete a VLAN """
     model = VLAN
-    template_name = 'vlan/VLANDeleteView.html'
+    template_name = 'vlan/delete.html'
     success_url = reverse_lazy('vlan:index')
 
     def delete(self, request, *args, **kwargs):
-        self.old = self.get_object()
         try:
-            kickstart.vlan_delete(self.get_object())
-            messages.success(self.request, 'VLAN {0} removed!'.format(self.old))
+            obj = self.get_object()
+            kickstart.vlan_delete(obj)
+            messages.success(self.request, 'VLAN {0} removed!'.format(obj))
+            return super(VLANDeleteView, self).delete(request, *args, **kwargs)
         except Exception as msg:
-            messages.error(self.request, msg, extra_tags='danger')
-            return super(VLANDeleteView, self).get(request, *args, **kwargs)
-        return super(VLANDeleteView, self).delete(request, *args, **kwargs)
+            featherfail(self, msg)
+        return super(VLANDeleteView, self).get(request, *args, **kwargs)

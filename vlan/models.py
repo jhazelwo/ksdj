@@ -59,22 +59,18 @@ class VLAN(UltraModel):
     def get_absolute_url(self):
         return reverse('vlan:detail', kwargs={'pk': self.id})
 
-    def activate(self, request):
+    def activate(self):
         """
         Update KSROOT/eth1.sh with this VLAN and set self.active to True.
         """
-        this_file = FileAsObj(os.path.join(KSROOT, 'eth1.sh'))
-        this_file.contents = []
-        this_file.add('/sbin/ifconfig eth1 inet {IP} netmask {MASK} up'.format(
+        file = FileAsObj(os.path.join(KSROOT, 'eth1.sh'))
+        file.contents = []
+        file.add('/sbin/ifconfig eth1 inet {IP} netmask {MASK} up'.format(
             IP=self.server_ip,
             MASK=self.cidr,
         ))
-        this_file.add('/sbin/service dhcpd restart')
-        this_file.write()
-
-        if this_file.Errors:
-            messages.error(request, this_file.Trace, extra_tags='danger')
-            return False
+        file.add('/sbin/service dhcpd restart')
+        file.write()
         self.active = True
         self.save()
-        return True
+        return

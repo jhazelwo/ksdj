@@ -12,9 +12,17 @@ from core.tools import UltraModel
 class Client(UltraModel):
     """
     """
-    name = models.CharField(validators=[RegexValidator('^[a-zA-Z][a-zA-Z0-9\.\-\_]+$')], max_length=32, unique=True) # Hostname
-    mac = models.CharField(validators=[RegexValidator('^([a-gA-G0-9]{2}[:-]){5}([a-gA-G0-9]){2}$')], max_length=17, unique=True) # MAC Address
-    ip = models.CharField(validators=[RegexValidator('^((\d){1,3}.){3}(\d){1,3}$')], max_length=15, blank=True, null=False, unique=True)
+    name = models.CharField(validators=[RegexValidator('^[a-zA-Z][a-zA-Z0-9\.\-\_]+$')],
+                            max_length=32,
+                            unique=True)  # Hostname
+    mac = models.CharField(validators=[RegexValidator('^([a-gA-G0-9]{2}[:-]){5}([a-gA-G0-9]){2}$')],
+                           max_length=17,
+                           unique=True)  # MAC Address
+    ip = models.CharField(validators=[RegexValidator('^((\d){1,3}.){3}(\d){1,3}$')],
+                          max_length=15,
+                          blank=True,    # Can be empty in form
+                          null=False,    # ...but not in DB
+                          unique=True)   # Client IP address
     TYPE_CHOICES = (
         ('01',  'Application'),
         ('02',  'Web'),

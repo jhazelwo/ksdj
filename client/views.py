@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse_lazy
 
 from core import kickstart
+from core.tools import featherfail
 from human.mixins import RequireStaffMixin
 from recent.functions import log_form_valid
 
@@ -30,15 +31,17 @@ class ClientCustomView(RequireStaffMixin, generic.UpdateView):
     """ Edit the kickstart config file for a client """
     form_class, model = CustomForm, Client
     template_name = 'client/ClientCustomView.html'
-    
 
     def form_valid(self, form):
         """ """
-        if not kickstart.update_kickstart_file(self, form):
-            return super(ClientCustomView, self).form_invalid(form)
-        messages.success(self.request, 'Changes saved!')
-        log_form_valid(self, form)
-        return super(ClientCustomView, self).form_valid(form)
+        try:
+            form = kickstart.update_kickstart_file(form)
+            messages.success(self.request, 'Changes saved!')
+            log_form_valid(self, form)
+            return super(ClientCustomView, self).form_valid(form)
+        except Exception as msg:
+            featherfail(self, msg)
+        return super(ClientCustomView, self).form_invalid(form)
 
 
 class ClientCreateView(RequireStaffMixin, generic.CreateView):
@@ -53,12 +56,15 @@ class ClientCreateView(RequireStaffMixin, generic.CreateView):
         return context
 
     def form_valid(self, form):
-        """ """ 
-        if not kickstart.client_create(self, form):
-            return super(ClientCreateView, self).form_invalid(form)
-        messages.success(self.request, 'Client added to kickstart!')
-        log_form_valid(self, form)
-        return super(ClientCreateView, self).form_valid(form)
+        """ """
+        try:
+            form = kickstart.client_create(form)
+            messages.success(self.request, 'Client added to kickstart!')
+            log_form_valid(self, form)
+            return super(ClientCreateView, self).form_valid(form)
+        except Exception as msg:
+            featherfail(self, msg)
+        return super(ClientCreateView, self).form_invalid(form)
 
 
 class ClientUpdateView(RequireStaffMixin, generic.UpdateView):
@@ -74,14 +80,16 @@ class ClientUpdateView(RequireStaffMixin, generic.UpdateView):
 
     def form_valid(self, form):
         """ """
-        self.old = Client.objects.get(id=self.object.id)
-        if not kickstart.client_delete(self):
-            return super(ClientUpdateView, self).form_invalid(form)
-        if not kickstart.client_create(self, form):
-            return super(ClientUpdateView, self).form_invalid(form)
-        messages.success(self.request, 'Changes saved!')
-        log_form_valid(self, form)
-        return super(ClientUpdateView, self).form_valid(form)
+        try:
+            old = Client.objects.get(id=self.object.id)
+            kickstart.client_delete(old)
+            form = kickstart.client_create(form, old)
+            messages.success(self.request, 'Changes saved!')
+            log_form_valid(self, form)
+            return super(ClientUpdateView, self).form_valid(form)
+        except Exception as msg:
+            featherfail(self, msg)
+        return super(ClientUpdateView, self).form_invalid(form)
 
 
 class ClientDeleteView(generic.DeleteView):
@@ -92,7 +100,10 @@ class ClientDeleteView(generic.DeleteView):
 
     def delete(self, request, *args, **kwargs):
         self.old = self.get_object()
-        if not kickstart.client_delete(self):
-            return super(ClientDeleteView, self).get(request, *args, **kwargs)
-        messages.success(self.request, 'Client {0} removed!'.format(self.old.name))
-        return super(ClientDeleteView, self).delete(request, *args, **kwargs)
+        try:
+            kickstart.client_delete(self.old)
+            messages.success(self.request, 'Client {0} removed!'.format(self.old.name))
+            return super(ClientDeleteView, self).delete(request, *args, **kwargs)
+        except Exception as msg:
+            featherfail(self, msg)
+        return super(ClientDeleteView, self).get(request, *args, **kwargs)

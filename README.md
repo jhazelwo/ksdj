@@ -19,7 +19,8 @@ manually restored from archive.
  `network, cidr, name, server_ip = get_data_from_form(form)`
 * Be sure to add all of the 'create new virtualenv and compile these things' to this file during next major upgrade.
 * Put a 'makemigrations,migrate' script on the kickstart server and make sure folks are aware.
-* Refactor all of the views and template names to reduce redundant words and match my conventions in other projects. 
+* Refactor all of the views and template names to reduce redundant words and match my conventions in other projects.
+* If client IP in use by vlan gateway or server IP fail
 
 Deployment notes:
 ----------------
