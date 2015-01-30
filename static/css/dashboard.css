@@ -103,3 +103,9 @@ body {
   display: inline-block;
   border-radius: 50%;
 }
+
+.errorlist {
+    background-color:#f2dede;
+    border-color:#ebccd1;
+    color:#a94442
+}

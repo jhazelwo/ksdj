@@ -26,13 +26,8 @@ class VLANCreateView(RequireStaffMixin, generic.CreateView):
     form_class, model = forms.Create, VLAN
     template_name = 'vlan/create.html'
 
-    def form_invalid(self, form):
-        messages.warning(self.request, 'Error! Please check your input.')
-        return super(VLANCreateView, self).form_invalid(form)
-    
     def form_valid(self, form):
         """
-        This is ugly, fo reals, like so ugly.
         """
         self.object = form.save(commit=False)
         try:
@@ -75,14 +70,6 @@ class VLANUpdateView(RequireStaffMixin, generic.UpdateView):
         else:
             return forms.Update
 
-    def form_invalid(self, form):
-        """
-        Show an extra error message during invalid form submission.
-        Note, this does NOT get called if other methods in this class super to form_invalid.
-        """
-        messages.warning(self.request, 'Error! Please check your input.')
-        return super(VLANUpdateView, self).form_invalid(form)
-    
     def form_valid(self, form):
         """
         Dj says the data is OK, so ask kickstart.py to update the files.

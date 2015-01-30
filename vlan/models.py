@@ -10,6 +10,9 @@ from core.tools import UltraModel
 from core.fileasobj import FileAsObj
 
 from cfgksdj import KSROOT
+foct = '(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[1-9])'
+ioct = '(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[1-9]|0)'
+reg = '^{foct}\.{ioct}\.{ioct}\.{ioct}$'.format(foct=foct, ioct=ioct)
 
 
 class VLAN(UltraModel):
@@ -17,15 +20,15 @@ class VLAN(UltraModel):
 
     """
     name = models.CharField(validators=[RegexValidator('^[0-9]+$')], max_length=6, unique=True)
-    network = models.CharField(validators=[RegexValidator('^(10|172|192).(\d){1,3}.(\d){1,3}.(\d){1,3}$')],
+    network = models.CharField(validators=[RegexValidator(reg)],
                                max_length=15,
                                unique=True)
-    server_ip = models.CharField(validators=[RegexValidator('^(10|172|192).(\d){1,3}.(\d){1,3}.(\d){1,3}$')],
+    server_ip = models.CharField(validators=[RegexValidator(reg)],
                                  max_length=15,
                                  blank=True,  # Can be empty in the form,
                                  null=False,  # but must be something in the database.
                                  unique=True)
-    gateway = models.CharField(validators=[RegexValidator('^(10|172|192).(\d){1,3}.(\d){1,3}.(\d){1,3}$')],
+    gateway = models.CharField(validators=[RegexValidator(reg)],
                                max_length=15,
                                blank=True,   # Can be empty in the form,
                                null=False,   # but must be something in the database.

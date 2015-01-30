@@ -8,6 +8,10 @@ from vlan.models import VLAN
 
 from core.tools import UltraModel
 
+foct = '(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[1-9])'
+ioct = '(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[1-9]|0)'
+reg = '^{foct}\.{ioct}\.{ioct}\.{ioct}$'.format(foct=foct, ioct=ioct)
+
 
 class Client(UltraModel):
     """
@@ -18,7 +22,7 @@ class Client(UltraModel):
     mac = models.CharField(validators=[RegexValidator('^([a-gA-G0-9]{2}[:-]){5}([a-gA-G0-9]){2}$')],
                            max_length=17,
                            unique=True)  # MAC Address
-    ip = models.CharField(validators=[RegexValidator('^((\d){1,3}.){3}(\d){1,3}$')],
+    ip = models.CharField(validators=[RegexValidator(reg)],
                           max_length=15,
                           blank=True,    # Can be empty in form
                           null=False,    # ...but not in DB

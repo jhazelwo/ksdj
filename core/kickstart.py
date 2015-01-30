@@ -81,12 +81,8 @@ def vlan_create(form):
     dhcpd_conf = FileAsObj(os.path.join(KSROOT, 'dhcpd.conf'))  # /opt/kickstart/etc/dhcpd.conf
     dhcpd_conf.add('include "{0}/vlan_{1}.conf";'.format(KSROOT, name))
     #
-    file = os.path.join(KSROOT, 'vlan_{0}.conf'.format(name))  # /opt/kickstart/etc/vlan_{name}.conf
     vlan_conf = FileAsObj()
-    try:
-        vlan_conf.read(file)
-    except FileNotFoundError:
-        pass
+    vlan_conf.filename = os.path.join(KSROOT, 'vlan_{0}.conf'.format(name))  # /opt/kickstart/etc/vlan_{name}.conf
     vlan_conf.contents = base_vlan.format(
         NETWORK=form.instance.network,
         CIDR=form.instance.cidr,
@@ -212,10 +208,7 @@ def client_create(form, old=False):
     if os.path.isfile(filename):
         raise ValueError('Failed to add client. The file "{0}" already exists!'.format(filename))
     tftp_pxe = FileAsObj()
-    try:
-        tftp_pxe.read(filename)
-    except FileNotFoundError:
-        pass
+    tftp_pxe.filename = filename
     tftp_pxe.contents = base_tftp.format(
         KS_CONF_DIR=KS_CONF_DIR,
         OS_RELEASE=os_release,
@@ -229,8 +222,6 @@ def client_create(form, old=False):
         raise ValueError('Failed to add client. The file "{0}" already exists!'.format(filename))
     if old is not False:
         kscfg = old.kickstart_cfg
-        print(old.ip)
-        print(form.instance.ip)
         kscfg = kscfg.replace(old.ip, form.instance.ip)
         kscfg = kscfg.replace(old.os_release, os_release)
         kscfg = kscfg.replace(old.vlan.get_cidr_display(), form.instance.vlan.cidr)
@@ -255,10 +246,7 @@ def client_create(form, old=False):
         )
     form.instance.kickstart_cfg = kscfg
     hostname_ks = FileAsObj()
-    try:
-        hostname_ks.read(filename)
-    except FileNotFoundError:
-        pass
+    hostname_ks.filename = filename
     hostname_ks.contents = kscfg.split('\n')
     #
     # {ksroot}/etc/clients.d/{hostname}.sh - shell variables for post build scripts to use
@@ -266,10 +254,7 @@ def client_create(form, old=False):
     if os.path.isfile(filename):
         raise ValueError('Failed to add client. The file "{0}" already exists!'.format(filename))
     client_sh = FileAsObj()
-    try:
-        client_sh.read(filename)
-    except FileNotFoundError:
-        pass
+    client_sh.filename = filename
 
     client_sh.contents = base_sh.format(
         HOSTNAME=hostname,
@@ -311,7 +296,7 @@ def client_delete(client):
     dashmac = '-'.join(mac_addr.split(':'))
     dashmac = '01-{0}'.format(dashmac)
     #
-    file = FileAsObj(etc_pxe_clients_conf)  # /opt/kickstart/etc/pxe_clients.conf
+    file = FileAsObj(etc_pxe_clients_conf, verbose=True)  # /opt/kickstart/etc/pxe_clients.conf
     file.rm(file.grep(mac_addr))
     pattern = ' {0}.{1} '.format(hostname, ks_domainname)
     file.rm(file.grep(pattern))
