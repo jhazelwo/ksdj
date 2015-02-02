@@ -168,6 +168,12 @@ def client_create(form, old=False):
     if form.instance.ip not in testing_net:
         raise ValueError('IP {0} not valid for VLAN {1}.'.format(form.instance.ip, form.instance.vlan))
     #
+    # Validate that client IP is not already a server IP, network or gateway.
+    if VLAN.objects.filter(server_ip=form.instance.ip).count() is not 0 or \
+        VLAN.objects.filter(gateway=form.instance.ip).count() is not 0 or \
+            VLAN.objects.filter(network=form.instance.ip).count() is not 0:
+        raise ValueError('Client IP "{0}" is in use by a VLAN object.'.format(form.instance.ip))
+    #
     # etc/hosts
     hostsfile = FileAsObj(etc_hosts, verbose=True)
     if hostsfile.egrep('^[0-9].*[ \\t]{0}'.format(hostname)):
