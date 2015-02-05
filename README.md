@@ -1,6 +1,6 @@
 KSDJ - A Django-based web interface for Kickstart server using NFS & PXE.
 =============================================================
-**Uses [Python 3.4.2](https://www.python.org/download/releases/3.4.2/) and [Django 1.7.3](https://www.djangoproject.com/download/1.7.3/tarball/)**
+**Uses [Python 3.4.2](https://www.python.org/download/releases/3.4.2/) and [Django 1.7.4](https://www.djangoproject.com/download/1.7.4/tarball/)**
 
 ### Bugs:
 * el5.5 throws a mysterious error during kick if '%end' is in hostname.ks.
