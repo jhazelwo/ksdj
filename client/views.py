@@ -21,16 +21,16 @@ class Index(generic.ListView):
     template_name = 'client/index.html'
 
 
-class ClientDetailView(generic.DetailView):
+class Detail(generic.DetailView):
     """ View details of a client """
     form_class, model = ClientForm, Client
-    template_name = 'client/ClientDetailView.html'
+    template_name = 'client/detail.html'
 
 
-class ClientCustomView(RequireStaffMixin, generic.UpdateView):
+class Custom(RequireStaffMixin, generic.UpdateView):
     """ Edit the kickstart config file for a client """
     form_class, model = CustomForm, Client
-    template_name = 'client/ClientCustomView.html'
+    template_name = 'client/custom.html'
 
     def form_valid(self, form):
         """ """
@@ -38,20 +38,20 @@ class ClientCustomView(RequireStaffMixin, generic.UpdateView):
             form = kickstart.update_kickstart_file(form)
             messages.success(self.request, 'Changes saved!')
             log_form_valid(self, form)
-            return super(ClientCustomView, self).form_valid(form)
+            return super(Custom, self).form_valid(form)
         except Exception as msg:
             featherfail(self, msg)
-        return super(ClientCustomView, self).form_invalid(form)
+        return super(Custom, self).form_invalid(form)
 
 
-class ClientCreateView(RequireStaffMixin, generic.CreateView):
+class Create(RequireStaffMixin, generic.CreateView):
     """ Add a client to kickstart """
     form_class, model = ClientForm, Client
-    template_name = 'client/ClientCreateView.html'
+    template_name = 'client/create.html'
 
     def get_context_data(self, **kwargs):
         """ """
-        context = super(ClientCreateView, self).get_context_data(**kwargs)
+        context = super(Create, self).get_context_data(**kwargs)
         context['vlans'] = VLAN.objects.all()
         return context
 
@@ -61,20 +61,20 @@ class ClientCreateView(RequireStaffMixin, generic.CreateView):
             form = kickstart.client_create(form)
             messages.success(self.request, 'Client added to kickstart!')
             log_form_valid(self, form)
-            return super(ClientCreateView, self).form_valid(form)
+            return super(Create, self).form_valid(form)
         except Exception as msg:
             featherfail(self, msg)
-        return super(ClientCreateView, self).form_invalid(form)
+        return super(Create, self).form_invalid(form)
 
 
-class ClientUpdateView(RequireStaffMixin, generic.UpdateView):
+class Update(RequireStaffMixin, generic.UpdateView):
     """ Edit a kickstart client """
     form_class, model = ClientForm, Client
-    template_name = 'client/ClientUpdateView.html'
+    template_name = 'client/update.html'
 
     def get_context_data(self, **kwargs):
         """ """
-        context = super(ClientUpdateView, self).get_context_data(**kwargs)
+        context = super(Update, self).get_context_data(**kwargs)
         context['vlans'] = VLAN.objects.all()
         return context
 
@@ -86,16 +86,16 @@ class ClientUpdateView(RequireStaffMixin, generic.UpdateView):
             form = kickstart.client_create(form, old)
             messages.success(self.request, 'Changes saved!')
             log_form_valid(self, form)
-            return super(ClientUpdateView, self).form_valid(form)
+            return super(Update, self).form_valid(form)
         except Exception as msg:
             featherfail(self, msg)
-        return super(ClientUpdateView, self).form_invalid(form)
+        return super(Update, self).form_invalid(form)
 
 
-class ClientDeleteView(generic.DeleteView):
+class Delete(generic.DeleteView):
     """ Delete a client """
     form_class, model = ClientForm, Client
-    template_name = 'client/ClientDeleteView.html'
+    template_name = 'client/delete.html'
     success_url = reverse_lazy('client:index')
 
     def delete(self, request, *args, **kwargs):
@@ -103,7 +103,7 @@ class ClientDeleteView(generic.DeleteView):
         try:
             kickstart.client_delete(self.old)
             messages.success(self.request, 'Client {0} removed!'.format(self.old.name))
-            return super(ClientDeleteView, self).delete(request, *args, **kwargs)
+            return super(Delete, self).delete(request, *args, **kwargs)
         except Exception as msg:
             featherfail(self, msg)
-        return super(ClientDeleteView, self).get(request, *args, **kwargs)
+        return super(Delete, self).get(request, *args, **kwargs)
