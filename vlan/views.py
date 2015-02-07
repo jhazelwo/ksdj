@@ -21,7 +21,7 @@ class Index(generic.ListView):
     template_name = 'vlan/index.html'
 
 
-class VLANCreateView(RequireStaffMixin, generic.CreateView):
+class Create(RequireStaffMixin, generic.CreateView):
     """ Add a VLAN to Kickstart """
     form_class, model = forms.Create, VLAN
     template_name = 'vlan/create.html'
@@ -37,24 +37,24 @@ class VLANCreateView(RequireStaffMixin, generic.CreateView):
                 self.object.activate()
             messages.success(self.request, 'VLAN {0} added to Kickstart!'.format(self.object))
             log_form_valid(self, form)
-            return super(VLANCreateView, self).form_valid(form)
+            return super(Create, self).form_valid(form)
         except Exception as msg:
             featherfail(self, msg)
-        return super(VLANCreateView, self).form_invalid(form)
+        return super(Create, self).form_invalid(form)
 
 
-class VLANDetailView(generic.DetailView):
+class Detail(generic.DetailView):
     """ View a VLAN's details """
     model = VLAN
     template_name = 'vlan/detail.html'
     
     def get_context_data(self, **kwargs):
-        context = super(VLANDetailView, self).get_context_data(**kwargs)
+        context = super(Detail, self).get_context_data(**kwargs)
         context['related'] = Client.objects.filter(vlan=self.object.id)
         return context
 
 
-class VLANUpdateView(RequireStaffMixin, generic.UpdateView):
+class Update(RequireStaffMixin, generic.UpdateView):
     """
     Edit a Kickstart VLAN
     """
@@ -83,13 +83,13 @@ class VLANUpdateView(RequireStaffMixin, generic.UpdateView):
                 self.object.activate()
             messages.success(self.request, 'Changes saved!')
             log_form_valid(self, form)
-            return super(VLANUpdateView, self).form_valid(form)
+            return super(Update, self).form_valid(form)
         except Exception as msg:
             featherfail(self, msg)
-        return super(VLANUpdateView, self).form_invalid(form)
+        return super(Update, self).form_invalid(form)
 
 
-class VLANDeleteView(generic.DeleteView):
+class Delete(generic.DeleteView):
     """ Delete a VLAN """
     model = VLAN
     template_name = 'vlan/delete.html'
@@ -100,7 +100,7 @@ class VLANDeleteView(generic.DeleteView):
             obj = self.get_object()
             kickstart.vlan_delete(obj)
             messages.success(self.request, 'VLAN {0} removed!'.format(obj))
-            return super(VLANDeleteView, self).delete(request, *args, **kwargs)
+            return super(Delete, self).delete(request, *args, **kwargs)
         except Exception as msg:
             featherfail(self, msg)
-        return super(VLANDeleteView, self).get(request, *args, **kwargs)
+        return super(Delete, self).get(request, *args, **kwargs)
