@@ -1,5 +1,4 @@
 # human/views.py
-from socket import gethostbyname
 
 from django.views import generic
 from django.shortcuts import redirect
@@ -8,11 +7,11 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse_lazy
-from django.core.validators import EmailValidator
-from django.core.exceptions import ValidationError
+# from django.core.exceptions import ValidationError
 
 from .mixins import RequireAnonMixin, RequireUserMixin
-from .authtools import common_passwords
+from . import authtools
+
 
 class Index(RequireUserMixin, generic.ListView):
     """
@@ -73,33 +72,10 @@ class SignupView(RequireAnonMixin, generic.CreateView):
             5. password size, 8-1024
         
         """
-        email = form.cleaned_data['username'].lower()
-        passw = form.cleaned_data['password1']
-        #
-        if User.objects.filter(username=email):
-            messages.warning(self.request, 'That email already has an account')
-            return super(SignupView, self).form_invalid(form)
-        #
         try:
-            testing = EmailValidator(whitelist=[])
-            user_part, domain_part = email.rsplit('@', 1)
-            testing(email)
-            gethostbyname(domain_part)
-        except Exception as e:
-            print(e)
-            messages.warning(self.request, 'Please enter a valid email address.')
-            return super(SignupView, self).form_invalid(form)
-        #
-        if passw in common_passwords:
-            messages.warning(self.request, 'That password is in the list of common passwords.')
-            return super(SignupView, self).form_invalid(form)
-        if len(passw) < 8:
-            messages.warning(self.request, 'Password too short! 8 character minimum.')
-            return super(SignupView, self).form_invalid(form)
-        if len(passw) > 1024:
-            messages.warning(self.request, 'Thank you for trying to use a super-long password but unfortunatly it was too long. Please keep it fewer than 1025 characters.')
-            return super(SignupView, self).form_invalid(form)
-        #
-        messages.success(self.request, 'Welcome, {}! Please log in'.format(email))
-        form.instance.username = email
-        return super(SignupView, self).form_valid(form)
+            form = authtools.create_account(self, form)
+            messages.success(self.request, 'Welcome, {0}; please log in!'.format(form.instance.username))
+            return super(SignupView, self).form_valid(form)
+        except Exception as msg:
+            messages.warning(self.request, msg)
+        return super(SignupView, self).form_invalid(form)

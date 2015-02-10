@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 
 from core.tools import UltraModel
 
+
 class Event(UltraModel):
     """ """
     name = models.CharField(max_length=256)
@@ -13,4 +14,4 @@ class Event(UltraModel):
     user = models.CharField(max_length=256)
     
     def get_absolute_url(self):
-        return reverse('recent:detail', kwargs={'pk' : self.id})
+        return reverse('recent:detail', kwargs={'pk': self.id})

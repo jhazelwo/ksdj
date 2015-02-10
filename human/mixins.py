@@ -4,6 +4,7 @@ from django.shortcuts import redirect
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 
+
 class RequireAnonMixin(object):
     """
     Require user NOT logged in
@@ -29,12 +30,12 @@ class RequireStaffMixin(object):
         if not request.user.is_authenticated():
             if self.mixin_messages:
                 messages.warning(request, 'Unable to comply, please log in.')
-            return redirect('{}?next={}'.format(reverse('human:login'),request.path))
+            return redirect('{}?next={}'.format(reverse('human:login'), request.path))
         if request.user.is_authenticated():
             if not request.user.is_staff:
                 if self.mixin_messages:
                     messages.warning(request, 'Unable to comply, your account is not allowed to use this tool.')
-                return redirect('{}?next={}'.format(reverse('human:index'),request.path))
+                return redirect('{}?next={}'.format(reverse('human:index'), request.path))
         return super(RequireStaffMixin, self).dispatch(request, *args, **kwargs)
 
 
@@ -46,5 +47,5 @@ class RequireUserMixin(object):
         if not request.user.is_authenticated():
             if self.mixin_messages:
                 messages.warning(request, 'Unable to comply, please log in.')
-            return redirect('{}?next={}'.format(reverse('human:login'),request.path))
+            return redirect('{}?next={}'.format(reverse('human:login'), request.path))
         return super(RequireUserMixin, self).dispatch(request, *args, **kwargs)
