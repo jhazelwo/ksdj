@@ -115,11 +115,10 @@ def vlan_delete(obj):
         dhcpd_conf.write()
     #
     filename = os.path.join(KSROOT, file_name)  # /opt/kickstart/etc/vlan_{name}.conf
-    if os.path.isfile(filename):
-        try:
-            os.remove(filename)
-        except:
-            pass
+    try:
+        os.remove(filename)
+    except:
+        pass
     return
 
 
