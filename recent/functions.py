@@ -2,63 +2,61 @@
 
 from .models import Log
 
-def log_form_valid(s, form):
+
+def log_form_valid(view):
     """
-    This is the start of my attempt to
-    write a semi-universally-compliant
-    logging system
+    Log a successful object change (create|update|delete).
+    Should be called from an override of form_valid() or delete()
+
+    view = `self` of a view object. Can be any django.views.generic based view.
+
+    # Example:
+    def form_valid(self, form):
+        log_form_valid(self)
+        messages.success(self.request, 'Changes saved!')
+        return super(ObjectChangeView, self).form_valid(form)
+
     """
     #
     # 
     try:
-        user_name = s.request.user
+        user_name = view.request.user
     except AttributeError:
         user_name = ''
     except Exception as e:
         user_name = e
     #
-    # I don't think these should ever
-    # actually fail, but if they do
-    # then log it. 
-    try:
-        model_name = s.model.__name__
-    except Exception as e:
-        model_name = e
-    try:
-        view_name = s.__class__.__name__
-    except Exception as e:
-        view_name = e
+    model_name = False
+    if hasattr(view, 'model'):
+        model_name = view.model.__name__
     #
+    object_name = False
+    post = False
+    if hasattr(view, 'request'):
+        #
+        #
+        post = view.request.POST
+        object_name = post.get('name')
     #
-    # Get object's name and its database ID
-    # new  = 'hostname'
-    # edit = 'hostname[id]'
-    try:
-        object_name = s.object.name
-    except Exception:
-        try:
-            object_name = s.request.POST.get('name').lower()
-        except Exception as e:
-            object_name = e
-    try:
-        dbid = '[{}]'.format(s.object.id) # Getting Real 
-        #dbid = '[' + s.object.id + ']'   # Tired of 
-        #dbid = '[%s]' % s.object.id      # Your Sht 
-    except AttributeError:
-        dbid = ''
+    if hasattr(view, 'object'):
+        if hasattr(view.object, 'name'):
+            #
+            # ObjectCreateView
+            object_name = view.object.name
+        if hasattr(view.object, 'id'):
+            #
+            # ObjectUpdateView
+            object_name = '{0}[{1}]'.format(view.object.name, view.object.id)
+    if hasattr(view, 'old'):
+        #
+        # ObjectDeleteView
+        object_name = '{0}[{1}]'.format(view.old.name, view.old.id)
     #
-    # 
-    try:
-        post = s.request.POST
-    except Exception as e:
-        post = e
-    #
-    #
-    D_B = Log(
+    this = Log(
         user_name=user_name,
-        view_name=view_name,
+        view_name=view.__class__.__name__,
         model_name=model_name,
         object_name=object_name,
         verbose=post,
         )
-    D_B.save()
+    this.save()

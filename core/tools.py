@@ -15,7 +15,7 @@ class UltraModel(models.Model):
     #
     # These are optional fields, but should be valid for
     # nearly everything.
-    doc_url = models.URLField(blank=True, null=True)   # A URL to external/wiki documentatoin about the object.
+    doc_url = models.URLField(blank=True, null=True)   # A URL to external/wiki documentation about the object.
     notes = models.TextField(blank=True, null=True)  # Comments/notes about the object
 
     class Meta:

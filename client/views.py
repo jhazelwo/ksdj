@@ -33,11 +33,10 @@ class Custom(RequireStaffMixin, generic.UpdateView):
     template_name = 'client/custom.html'
 
     def form_valid(self, form):
-        """ """
         try:
             form = kickstart.update_kickstart_file(form)
+            log_form_valid(self)
             messages.success(self.request, 'Changes saved!')
-            log_form_valid(self, form)
             return super(Custom, self).form_valid(form)
         except Exception as msg:
             featherfail(self, msg)
@@ -50,17 +49,15 @@ class Create(RequireStaffMixin, generic.CreateView):
     template_name = 'client/create.html'
 
     def get_context_data(self, **kwargs):
-        """ """
         context = super(Create, self).get_context_data(**kwargs)
         context['vlans'] = VLAN.objects.all()
         return context
 
     def form_valid(self, form):
-        """ """
         try:
             form = kickstart.client_create(form)
+            log_form_valid(self)
             messages.success(self.request, 'Client added to kickstart!')
-            log_form_valid(self, form)
             return super(Create, self).form_valid(form)
         except Exception as msg:
             featherfail(self, msg)
@@ -73,19 +70,17 @@ class Update(RequireStaffMixin, generic.UpdateView):
     template_name = 'client/update.html'
 
     def get_context_data(self, **kwargs):
-        """ """
         context = super(Update, self).get_context_data(**kwargs)
         context['vlans'] = VLAN.objects.all()
         return context
 
     def form_valid(self, form):
-        """ """
         try:
             old = Client.objects.get(id=self.object.id)
             kickstart.client_delete(old)
             form = kickstart.client_create(form, old)
+            log_form_valid(self)
             messages.success(self.request, 'Changes saved!')
-            log_form_valid(self, form)
             return super(Update, self).form_valid(form)
         except Exception as msg:
             featherfail(self, msg)
@@ -102,6 +97,7 @@ class Delete(generic.DeleteView):
         self.old = self.get_object()
         try:
             kickstart.client_delete(self.old)
+            log_form_valid(self)
             messages.success(self.request, 'Client {0} removed!'.format(self.old.name))
             return super(Delete, self).delete(request, *args, **kwargs)
         except Exception as msg:

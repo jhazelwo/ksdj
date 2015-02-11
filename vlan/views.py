@@ -35,8 +35,8 @@ class Create(RequireStaffMixin, generic.CreateView):
             if form.cleaned_data['active']:
                 VLAN.objects.all().update(active=False)
                 self.object.activate()
+            log_form_valid(self)
             messages.success(self.request, 'VLAN {0} added to Kickstart!'.format(self.object))
-            log_form_valid(self, form)
             return super(Create, self).form_valid(form)
         except Exception as msg:
             featherfail(self, msg)
@@ -81,8 +81,8 @@ class Update(RequireStaffMixin, generic.UpdateView):
             if form.cleaned_data['active']:
                 VLAN.objects.all().update(active=False)
                 self.object.activate()
+            log_form_valid(self)
             messages.success(self.request, 'Changes saved!')
-            log_form_valid(self, form)
             return super(Update, self).form_valid(form)
         except Exception as msg:
             featherfail(self, msg)
@@ -99,6 +99,7 @@ class Delete(generic.DeleteView):
         try:
             obj = self.get_object()
             kickstart.vlan_delete(obj)
+            log_form_valid(self)
             messages.success(self.request, 'VLAN {0} removed!'.format(obj))
             return super(Delete, self).delete(request, *args, **kwargs)
         except Exception as msg:

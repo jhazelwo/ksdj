@@ -13,7 +13,7 @@ class Log(models.Model):
     model_name = models.CharField(max_length=1024, blank=True, null=True)
     view_name = models.CharField(max_length=1024, blank=True, null=True)
     object_name = models.CharField(max_length=1024, blank=True, null=True)
-    when = models.DateTimeField(auto_now_add=True) # now()
+    when = models.DateTimeField(auto_now_add=True)  # now()
     verbose = models.CharField(max_length=1024, blank=True, null=True)    # request.POST
     
     def __str__(self):

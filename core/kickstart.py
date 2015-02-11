@@ -15,7 +15,7 @@ from client.models import Client
 
 # https://github.com/tehmaze/ipcalc (ported to py3)
 from . import ipcalc
-# https://github.com/nullpass/npnutils/blob/master/fileasobj.py
+# https://github.com/nullpass/fileasobj/blob/master/__init__.py
 from .fileasobj import FileAsObj
 # base templates for files we create
 from .skel import base_ks, base_sh, base_tftp, base_vlan

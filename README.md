@@ -3,18 +3,13 @@ KSDJ - A Django-based web interface for Kickstart server using NFS & PXE.
 **Uses [Python 3.4.2](https://www.python.org/download/releases/3.4.2/) and [Django 1.7.4](https://www.djangoproject.com/download/1.7.4/tarball/)**
 
 ### Bugs:
-* el5.5 throws a mysterious error during kick if '%end' is in hostname.ks.
-* email addresses of corporate length probably won't fit- same issue everyone else ran into and is why there are so many 
-auth extensions for Dj. Writing my own fix, importing someone elses, or going pure LDAP are all about the same about of 
-work so I'm going to go for ldap next chance I get. (that is- if I can get the py3 branch to actually compile)
-* A typo during client update that is syntactically valid but not logically valid (like making the IP outside the VLAN) 
-will result in some of the client files being removed putting the client in an un-editable state until the files are 
-manually restored from archive.
+* A typo during client update that is syntactically valid but not logically valid may result in some of the client 
+files being removed putting the client in an un-editable state until the files are manually restored from archive.
 
 ### TODO:
 * Be sure to add all of the 'create new virtualenv and compile these things' to this file during next major upgrade.
 * Put a 'makemigrations,migrate' script on the kickstart server and make sure folks are aware.
-
+* Strip out extra '%end' from kickstart config is release is el5.
 
 Deployment notes:
 ----------------
