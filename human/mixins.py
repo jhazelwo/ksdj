@@ -15,7 +15,7 @@ class RequireAnonMixin(object):
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated():
             if self.success_url:
-                messages.info(self.request, 'redirected success_url {}'.format(self.success_url))
+                messages.info(self.request, 'redirected success_url {0}'.format(self.success_url))
                 return redirect(self.success_url)
             messages.info(self.request, 'redirected to home')
             return redirect(reverse('home'))
@@ -30,12 +30,12 @@ class RequireStaffMixin(object):
         if not request.user.is_authenticated():
             if self.mixin_messages:
                 messages.warning(request, 'Unable to comply, please log in.')
-            return redirect('{}?next={}'.format(reverse('human:login'), request.path))
+            return redirect('{0}?next={1}'.format(reverse('human:login'), request.path))
         if request.user.is_authenticated():
             if not request.user.is_staff:
                 if self.mixin_messages:
                     messages.warning(request, 'Unable to comply, your account is not allowed to use this tool.')
-                return redirect('{}?next={}'.format(reverse('human:index'), request.path))
+                return redirect('{0}?next={1}'.format(reverse('human:index'), request.path))
         return super(RequireStaffMixin, self).dispatch(request, *args, **kwargs)
 
 
@@ -47,5 +47,5 @@ class RequireUserMixin(object):
         if not request.user.is_authenticated():
             if self.mixin_messages:
                 messages.warning(request, 'Unable to comply, please log in.')
-            return redirect('{}?next={}'.format(reverse('human:login'), request.path))
+            return redirect('{0}?next={1}'.format(reverse('human:login'), request.path))
         return super(RequireUserMixin, self).dispatch(request, *args, **kwargs)

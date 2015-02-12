@@ -89,7 +89,7 @@ class Update(RequireStaffMixin, generic.UpdateView):
         return super(Update, self).form_invalid(form)
 
 
-class Delete(generic.DeleteView):
+class Delete(RequireStaffMixin, generic.DeleteView):
     """ Delete a VLAN """
     model = VLAN
     template_name = 'vlan/delete.html'

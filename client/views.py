@@ -87,7 +87,7 @@ class Update(RequireStaffMixin, generic.UpdateView):
         return super(Update, self).form_invalid(form)
 
 
-class Delete(generic.DeleteView):
+class Delete(RequireStaffMixin, generic.DeleteView):
     """ Delete a client """
     form_class, model = ClientForm, Client
     template_name = 'client/delete.html'
