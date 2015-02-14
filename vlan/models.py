@@ -6,29 +6,27 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.core.validators import RegexValidator
 
-from core.tools import UltraModel
+from core.tools import UltraModel, ipregex
 from core.fileasobj import FileAsObj
 
 from cfgksdj import KSROOT
-foct = '(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[1-9])'
-ioct = '(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[1-9]|0)'
-reg = '^{foct}\.{ioct}\.{ioct}\.{ioct}$'.format(foct=foct, ioct=ioct)
 
 
 class VLAN(UltraModel):
     """
-
+    In the context of this website a VLAN defines a network that the kickstart process serves.
+    Clients to be built must be inside a network defined by this model.
     """
     name = models.CharField(validators=[RegexValidator('^[0-9]+$')], max_length=6, unique=True)
-    network = models.CharField(validators=[RegexValidator(reg)],
+    network = models.CharField(validators=[RegexValidator(ipregex)],
                                max_length=15,
                                unique=True)
-    server_ip = models.CharField(validators=[RegexValidator(reg)],
+    server_ip = models.CharField(validators=[RegexValidator(ipregex)],
                                  max_length=15,
                                  blank=True,  # Can be empty in the form,
                                  null=False,  # but must be something in the database.
                                  unique=True)
-    gateway = models.CharField(validators=[RegexValidator(reg)],
+    gateway = models.CharField(validators=[RegexValidator(ipregex)],
                                max_length=15,
                                blank=True,   # Can be empty in the form,
                                null=False,   # but must be something in the database.

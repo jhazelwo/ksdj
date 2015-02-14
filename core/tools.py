@@ -5,18 +5,21 @@ import logging
 from django.db import models
 from django.contrib import messages
 
+#
+# We need a very less vague IP address regular expression for our model attributes.
+foct = '(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[1-9])'
+ioct = '(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[1-9]|0)'
+ipregex = '^{foct}\.{ioct}\.{ioct}\.{ioct}$'.format(foct=foct, ioct=ioct)
+
 
 class UltraModel(models.Model):
     """
     A wrapper model. All models should inherit this. 
     """
-    created = models.DateTimeField(auto_now_add=True) # Born
+    created = models.DateTimeField(auto_now_add=True)  # Born
     modified = models.DateTimeField(auto_now=True)     # last changed
-    #
-    # These are optional fields, but should be valid for
-    # nearly everything.
     doc_url = models.URLField(blank=True, null=True)   # A URL to external/wiki documentation about the object.
-    notes = models.TextField(blank=True, null=True)  # Comments/notes about the object
+    notes = models.TextField(blank=True, null=True)    # Comments/notes about the object
 
     class Meta:
         abstract = True

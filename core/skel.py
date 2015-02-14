@@ -243,4 +243,3 @@ include "/opt/kickstart/etc/vlan_26.conf";
 include "/opt/kickstart/etc/vlan_48.conf";
 
 """
-

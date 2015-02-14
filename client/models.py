@@ -6,15 +6,12 @@ from django.core.urlresolvers import reverse
 
 from vlan.models import VLAN
 
-from core.tools import UltraModel
-
-foct = '(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[1-9])'
-ioct = '(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[1-9]|0)'
-reg = '^{foct}\.{ioct}\.{ioct}\.{ioct}$'.format(foct=foct, ioct=ioct)
+from core.tools import UltraModel, ipregex
 
 
 class Client(UltraModel):
     """
+    A Kickstart client; the server you want to auto-build with this system.
     """
     name = models.CharField(validators=[RegexValidator('^[a-zA-Z][a-zA-Z0-9\.\-\_]+$')],
                             max_length=32,
@@ -22,7 +19,7 @@ class Client(UltraModel):
     mac = models.CharField(validators=[RegexValidator('^([a-gA-G0-9]{2}[:-]){5}([a-gA-G0-9]){2}$')],
                            max_length=17,
                            unique=True)  # MAC Address
-    ip = models.CharField(validators=[RegexValidator(reg)],
+    ip = models.CharField(validators=[RegexValidator(ipregex)],
                           max_length=15,
                           blank=True,    # Can be empty in form
                           null=False,    # ...but not in DB

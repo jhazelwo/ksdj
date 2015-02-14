@@ -78,5 +78,4 @@ http {
     uwsgi -s /tmp/ksdj.socket --uid=apache --gid=apache --module ksdj.wsgi --chmod-socket=600 --enable-threads
 
 
-* Slightly better versions of that stuff and the custom interfaces is in /etc/init.d/Kickstart and takes args 
-(start|stop|bounceweb)
+* Slightly better versions of that stuff is in /etc/init.d/Kickstart and takes args (start|stop|bounceweb)

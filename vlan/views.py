@@ -4,7 +4,7 @@ from django.views import generic
 from django.contrib import messages
 from django.core.urlresolvers import reverse_lazy
 
-from core import kickstart, ipcalc
+from core import kickstart
 from core.tools import featherfail
 from human.mixins import RequireStaffMixin
 from recent.functions import log_form_valid
@@ -27,8 +27,6 @@ class Create(RequireStaffMixin, generic.CreateView):
     template_name = 'vlan/create.html'
 
     def form_valid(self, form):
-        """
-        """
         self.object = form.save(commit=False)
         try:
             form = kickstart.vlan_create(form)
@@ -57,6 +55,7 @@ class Detail(generic.DetailView):
 class Update(RequireStaffMixin, generic.UpdateView):
     """
     Edit a Kickstart VLAN
+    Special restrictions if there are clients using the VLAN.
     """
     form_class, model = forms.Update, VLAN
     template_name = 'vlan/update.html'
@@ -71,9 +70,6 @@ class Update(RequireStaffMixin, generic.UpdateView):
             return forms.Update
 
     def form_valid(self, form):
-        """
-        Dj says the data is OK, so ask kickstart.py to update the files.
-        """
         try:
             if self.object.client.count() is 0:
                 kickstart.vlan_delete(self.object)
