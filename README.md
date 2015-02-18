@@ -8,7 +8,6 @@ files being removed putting the client in an un-editable state until the files a
 
 ### TODO:
 * Be sure to add all of the 'create new virtualenv and compile these things' to this file during next major upgrade.
-* Put a 'makemigrations,migrate' script on the kickstart server and make sure folks are aware.
 * Strip out extra '%end' from kickstart config is release is el5.
 
 Deployment notes:
@@ -70,12 +69,15 @@ http {
 }  
 ```
 
-#### UWSGI
-    -lts is fine
-    cd /opt/www/
-    source bin/activate
-    cd ksdj/
-    uwsgi -s /tmp/ksdj.socket --uid=apache --gid=apache --module ksdj.wsgi --chmod-socket=600 --enable-threads
-
+#### UWSGI (-lts is fine)
+    /opt/www/bin/uwsgi -H/opt/www -s /tmp/ksdj.socket --uid=apache --gid=apache --module ksdj.wsgi --chmod-socket=600 --enable-threads >> /var/log/uwsgi.log 2>&1 &
 
 * Slightly better versions of that stuff is in /etc/init.d/Kickstart and takes args (start|stop|bounceweb)
+
+
+### DB Migrate
+    cd /opt/www/
+    source bin/activate
+    cd ksdj
+    python manage.py makemigrations
+    python manage.py migrate

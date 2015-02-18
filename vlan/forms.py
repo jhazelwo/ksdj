@@ -4,6 +4,9 @@ from . import models
 
 
 class Update(ModelForm):
+    """
+    Edit VLAN that has no clients associated with it yet.
+    """
     class Meta:
         fields = (
             'name',
@@ -24,6 +27,9 @@ class Update(ModelForm):
 
 
 class LockedUpdate(ModelForm):
+    """
+    VLAN in use; only render notes and active fields.
+    """
     class Meta:
         fields = (
             'notes',
@@ -38,6 +44,9 @@ class LockedUpdate(ModelForm):
 
 
 class Create(ModelForm):
+    """
+    Create a VLAN.
+    """
     class Meta:
         fields = (
             'name',

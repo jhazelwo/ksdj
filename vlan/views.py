@@ -62,7 +62,7 @@ class Update(RequireStaffMixin, generic.UpdateView):
     
     def get_form_class(self):
         """
-        If there are any clients using this vlan then render most of the fields as disabled
+        If there are any clients using this vlan then only render 'notes' and 'active' form elements.
         """
         if self.object.client.count() is not 0:
             return forms.LockedUpdate
