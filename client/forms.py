@@ -1,7 +1,4 @@
 # client/forms.py
-from __future__ import absolute_import
-
-
 from django.forms import Form, ModelForm, RadioSelect, Textarea, CharField
 from . import models
 
@@ -19,8 +16,8 @@ class ClientForm(ModelForm):
             )
         model = models.Client
         widgets = {
-            'build_type' : RadioSelect(),
-            'os_release' : RadioSelect(),
+            'build_type': RadioSelect(),
+            'os_release': RadioSelect(),
         }
 
     def __init__(self, *args, **kwargs):
@@ -31,6 +28,9 @@ class ClientForm(ModelForm):
 
 
 class CustomForm(ModelForm):
+    """
+    A form providing access to a client's kickstart config file "etc/ks.d/`hostname`.ks"
+    """
     class Meta:
         fields = (
             'kickstart_cfg',
