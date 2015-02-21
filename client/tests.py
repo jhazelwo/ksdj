@@ -33,7 +33,8 @@ class ClientTestCase(TestCase):
             Client.objects.create()
 
     def test_missing(self):
-        self.assertEqual(Client.objects.filter(name='    missing    ').count(), 0)
+        get_one()
+        self.assertFalse(Client.objects.filter(name=' ` ` ` `missing / / | | | '))
 
     def test_find(self):
         get_one()
