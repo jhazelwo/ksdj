@@ -11,7 +11,7 @@ from vlan.models import VLAN
 
 def get_one():
     """
-    Provide a properly formatted client object.
+    Provide a properly formatted VLAN object.
     """
     return VLAN.objects.create(
         name='1029',

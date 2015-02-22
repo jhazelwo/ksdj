@@ -7,7 +7,6 @@ KSDJ - A Django-based web interface for Kickstart server using NFS & PXE.
 files being removed putting the client in an un-editable state until the files are manually restored from archive.
 
 ### TODO:
-* Be sure to add all of the 'create new virtualenv and compile these things' to this file during next major upgrade.
 * Strip out extra '%end' from kickstart config is release is el5.
 
 Deployment notes:
