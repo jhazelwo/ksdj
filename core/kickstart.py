@@ -229,7 +229,7 @@ def client_create(form, old=False):
         kscfg = old.kickstart_cfg
         kscfg = kscfg.replace(old.ip, form.instance.ip)
         kscfg = kscfg.replace(old.os_release, os_release)
-        kscfg = kscfg.replace(old.vlan.get_cidr_display(), form.instance.vlan.cidr)
+        kscfg = kscfg.replace(old.vlan.cidr, form.instance.vlan.cidr)
         kscfg = kscfg.replace(old.vlan.gateway, form.instance.vlan.gateway)
         kscfg = kscfg.replace(old.name, hostname)
         if old.os_release == 'el5':
