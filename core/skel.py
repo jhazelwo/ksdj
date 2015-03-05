@@ -19,41 +19,31 @@ selinux --disabled
 timezone --utc UTC
 skipx
 zerombr
-
+services --disabled=rdisc
 %include /tmp/partout
-
 %pre
 #!/bin/bash
 thisDrive="`ls -ld /sys/block/sd*|grep -v usb|sort|head -1|awk -F/ '{{print $4}}'|awk '{{print $1}}'`"
 cat << EOF >> /tmp/partout
-
 bootloader --location=mbr --driveorder=${{thisDrive}} --append="crashkernel=auto biosdevname=0 numa=off rhgb quiet"
-
 clearpart --all --drives=${{thisDrive}} --initlabel
-
 part /boot --fstype=ext4 --asprimary --size=512 --ondisk=${{thisDrive}}
 part pv.008018 --grow --size=1
-
 volgroup rootvg --pesize=32768 pv.008018
-
 logvol /opt --fstype={EXT34} --name=opt  --vgname=rootvg --grow --size=1
 logvol /    --fstype={EXT34} --name=root --vgname=rootvg --size=2048
 logvol swap                  --name=swap --vgname=rootvg --size=32768
 logvol /tmp --fstype={EXT34} --name=tmp  --vgname=rootvg --size=16384
 logvol /usr --fstype={EXT34} --name=usr  --vgname=rootvg --size=6144
 logvol /var --fstype={EXT34} --name=var  --vgname=rootvg --size=8192
-
 EOF
 %end
-
-services --disabled=rdisc
 
 %packages
 @Base
 @Core
 @network-file-system-client
 @server-policy
-
 cloog-ppl
 compat-libcap1
 compat-libstdc++-33
@@ -81,8 +71,6 @@ mpfr
 ppl
 xorg-x11-utils
 xorg-x11-xauth
-
-
 elfutils-libs
 elfutils-libelf-devel
 elfutils-devel
@@ -167,15 +155,23 @@ dos2unix
 
 %post --log=/root/post.log
 #!/bin/bash
-#
-mkdir /root/ks
-mount -t nfs -o ro,intr,nolock,vers=3 {SERVER_IP}:/opt/kickstart/ /root/ks/
-cp -v /root/ks/etc/clients.d/{HOSTNAME}.sh /root/kickstart.source || exit $?
-/root/ks/bin/build.d/00-fover.sh || exit $?
-/root/ks/bin/build.d/10-lockdown.sh || exit $?
-/root/ks/bin/build.d/70-bond.sh || exit $?
-/root/ks/bin/build.d/80-byapp.sh || exit $?
-/root/ks/bin/build.d/90-netbackup.sh || exit $?
+{{
+    mkdir /root/ks
+    mount -t nfs -o ro,intr,nolock,vers=3 {SERVER_IP}:/opt/kickstart/ /root/ks/
+    while ! test -f /root/ks/etc/clients.d/{HOSTNAME}.sh; do
+        echo "`date` /root/ks/etc/clients.d/{HOSTNAME}.sh not found, waiting..."
+        sleep 2
+    done
+    cp -v /root/ks/etc/clients.d/{HOSTNAME}.sh /root/kickstart.source || exit
+    /root/ks/bin/build.d/00-fover.sh 2>&1 || exit $?
+    /root/ks/bin/build.d/10-lockdown.sh 2>&1 || exit $?
+    /root/ks/bin/build.d/70-bond.sh 2>&1 || exit $?
+    /root/ks/bin/build.d/80-byapp.sh 2>&1 || exit $?
+    /root/ks/bin/build.d/90-netbackup.sh 2>&1 || exit $?
+    /root/ks/bin/build.d/91-splunk.sh 2>&1 || exit $?
+    /root/ks/bin/build.d/92-puppet.sh 2>&1 || exit $?
+    echo "`date` hostname.ks done"
+}} | tee -a /dev/tty1
 %end
 """
 

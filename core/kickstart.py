@@ -253,6 +253,11 @@ def client_create(form, old=False):
     hostname_ks = FileAsObj()
     hostname_ks.filename = filename
     hostname_ks.contents = kscfg.split('\n')
+    if form.cleaned_data['os_release'] == 'el5':
+        #
+        # EntLinux 5(.5) cannot understand multiple %end statements, remove all then re-add the last one.
+        hostname_ks.rm('%end')
+        hostname_ks.add('%end')
     #
     # {ksroot}/etc/clients.d/{hostname}.sh - shell variables for post build scripts to use
     filename = os.path.join(CLIENT_DIR, '{0}.sh'.format(hostname))
