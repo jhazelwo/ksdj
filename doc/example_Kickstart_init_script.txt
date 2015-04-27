@@ -1,0 +1,54 @@
+#!/bin/sh
+#
+# /etc/init.d/Kickstart
+#
+# control the Django web procs on a DEV server
+#
+
+stop() {
+        /usr/local/nginx/sbin/nginx -s quit
+        pkill uwsgi
+}
+
+start() {
+        chown -R apache /opt/www/ksdj
+        /usr/local/nginx/sbin/nginx 
+        cd /opt/www/ksdj 
+        /opt/www/bin/uwsgi -H/opt/www -s /tmp/ksdj.socket --uid=apache --gid=apache --module ksdj.wsgi --chmod-socket=600 --enable-threads >> /var/log/uwsgi.log 2>&1 &
+}
+
+usage() {
+        echo "$0 (start|stop|status|bounceweb)"
+}
+
+bounceweb() {
+        pkill uwsgi
+        /usr/local/nginx/sbin/nginx -s quit
+        sleep 1
+        /usr/local/nginx/sbin/nginx 
+        cd /opt/www/ksdj 
+        /opt/www/bin/uwsgi -H/opt/www -s /tmp/ksdj.socket --uid=apache --gid=apache --module ksdj.wsgi --chmod-socket=600 --enable-threads >> /var/log/uwsgi.log 2>&1 &
+}
+
+status() {
+        ps -fu apache
+}
+
+case "$1" in
+    bounceweb)
+        bounceweb
+        ;;
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+       status
+       ;;
+    *)
+        usage
+        exit 2
+        ;;
+esac
