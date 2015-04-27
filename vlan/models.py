@@ -2,12 +2,15 @@
 import os
 
 from django.db import models
-from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.core.validators import RegexValidator
 
 from core.tools import UltraModel, ipregex
-from core.fileasobj import FileAsObj
+try:
+    from core.fileasobj import FileAsObj
+except ImportError as e:
+    msg = '{0}, get a copy from https://github.com/nullpass/fileasobj '.format(e)
+    raise ImportError(msg)
 
 from cfgksdj import KSROOT
 

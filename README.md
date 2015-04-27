@@ -11,6 +11,16 @@ files being removed putting the client in an un-editable state until the files a
 Deployment notes:
 ----------------
 
+### Batteries not included:
+* Get a copy of https://github.com/tehmaze/ipcalc/blob/master/ipcalc.py save as ./core/ipcalc.py
+* Get a copy of https://github.com/nullpass/fileasobj/blob/master/__init__.py save as ./core/fileasobj.py
+* Create your own cfgksdj/__init__.py in your Python path, in there put things like your secret key, allowed
+ hosts, basically everything that's missing from settings.py and required by kickstart.py.
+ Check doc/example_cfgksdj.txt for a start.
+* Of course you'll also need to actually set up the Kickstart guts, but if you're using this software then you're
+ already a brilliant sysadmin, I'm sure you'll be fine.
+
+
 ### VIRTUALENV:
 * get the latest from their github repo. v1.9.x doesn't work with py3.4, latest does.
 

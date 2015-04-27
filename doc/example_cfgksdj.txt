@@ -1,0 +1,57 @@
+"""
+
+Kickstart DJ Settings!
+
+This example file should help get you started. You should make a 'cfgksdj' directory somewhere
+in your Python path that is _OUTSIDE THIS GIT REPO_ and store a copy of this file there named __init__.py.
+Keep the file outside of git so it doesn't get pushed/committed by accident.
+
+"""
+
+
+import os
+
+SECRET_KEY = 'lololololololololololololololololololololololololol'
+ALLOWED_HOSTS = ['127.0.0.1','kickstart.google.edu']
+
+
+FORCE_SCRIPT_NAME = ''
+LOCAL_ADMIN_URL = r'^admin/'
+DEBUG = True
+
+
+TEMPLATE_DEBUG = DEBUG
+
+
+ks_root_password = "root"
+ks_nameservers = "8.8.8.8"
+ks_domainname = "yahoo.gov"
+
+
+# Kickstart config-file root
+KSROOT = os.path.join(os.sep,'opt','kickstart','etc')
+
+# equiv of /opt/tftpboot/pxelinux.cfg/
+# where we put grub menus for pxe clients named by mac address
+TFTP = os.path.join(os.sep,'opt','tftpboot','pxelinux.cfg')
+
+# equiv of /opt/kickstart/etc/clients.d
+# Where we write the hostname.sh files that contain client variables
+CLIENT_DIR = os.path.join(KSROOT,'clients.d')
+
+# equiv of /opt/kickstart/etc/ks.d
+# Kickstart config files saved here, named by hostname.
+KS_CONF_DIR = os.path.join(KSROOT,'ks.d')
+
+# equiv of /etc/hosts
+etc_hosts = os.path.join(os.sep,'etc','hosts')
+
+# equiv of /etc/hosts.allow (if you use tcpwrappers)
+etc_hosts_allow = os.path.join(os.sep,'etc','hosts.allow')
+
+# Where we tell DHCPD about the kickstart clients
+etc_pxe_clients_conf = os.path.join(KSROOT,'pxe_clients.conf')
+
+# Place to put backups of files we change/delete
+BK_DIR = os.path.join(KSROOT,'.archive')
+
