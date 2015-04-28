@@ -8,20 +8,14 @@ Keep the file outside of git so it doesn't get pushed/committed by accident.
 
 """
 
-
 import os
 
 SECRET_KEY = 'lololololololololololololololololololololololololol'
 ALLOWED_HOSTS = ['127.0.0.1','kickstart.google.edu']
 
-
 FORCE_SCRIPT_NAME = ''
 LOCAL_ADMIN_URL = r'^admin/'
 DEBUG = True
-
-
-TEMPLATE_DEBUG = DEBUG
-
 
 ks_root_password = "root"
 ks_nameservers = "8.8.8.8"
@@ -54,4 +48,3 @@ etc_pxe_clients_conf = os.path.join(KSROOT,'pxe_clients.conf')
 
 # Place to put backups of files we change/delete
 BK_DIR = os.path.join(KSROOT,'.archive')
-

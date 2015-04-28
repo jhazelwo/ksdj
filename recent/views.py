@@ -1,9 +1,6 @@
 # recent/views.py
 
 from django.views import generic
-from django.contrib import messages
-from django.shortcuts import redirect
-from django.core.urlresolvers import reverse
 
 from human.mixins import RequireStaffMixin
 

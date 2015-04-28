@@ -28,7 +28,7 @@ class UltraModel(models.Model):
         return str(self.name)
 
 
-def featherfail(view=False, msg=False):
+def featherfail(view=None, msg=''):
     """
     Feather Fail. Show pretty error message a log it.
 

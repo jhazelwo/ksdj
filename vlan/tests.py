@@ -1,7 +1,7 @@
 """
 VLAN/tests.py
 """
-from django.db.utils import IntegrityError
+# from django.db.utils import IntegrityError
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
