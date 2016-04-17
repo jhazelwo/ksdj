@@ -13,9 +13,7 @@ files being removed putting the client in an un-editable state until the files a
 Deployment notes:
 ----------------
 
-### Batteries not included:
-* Get a copy of https://github.com/tehmaze/ipcalc/blob/master/ipcalc.py save as ./core/ipcalc.py
-* Get a copy of https://github.com/nullpass/fileasobj/blob/master/__init__.py save as ./core/fileasobj.py
+### Not all batteries are included.:
 * Create your own cfgksdj/__init__.py in your Python path, in there put things like your secret key, allowed
  hosts, basically everything that's missing from settings.py and required by kickstart.py.
  Check doc/example_cfgksdj.txt for a start.

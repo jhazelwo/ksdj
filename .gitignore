@@ -1,11 +1,14 @@
-.idea
+/pip-selfcheck.json
+/lib/
+/bin/
+/include/
 *.pyc
+*.zip
+*.tar
+*.gz
+.idea
+*.rpm
+*.exe
+
 db.*
 [0-9][0-9][0-9]*.py
-# https://github.com/tehmaze/ipcalc
-# I've ported this to py3, but shouldn't add it back to github here.
-ipcalc.py
-
-# https://github.com/nullpass/fileasobj/blob/master/fileasobj.py
-# FilAsObj.py already listed in npnutils, don't include in this repo.
-fileasobj.py

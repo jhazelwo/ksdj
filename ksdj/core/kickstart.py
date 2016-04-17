@@ -12,20 +12,8 @@ from socket import gethostbyname
 from vlan.models import VLAN
 from client.models import Client
 
-# https://github.com/tehmaze/ipcalc (ported to py3)
-try:
-    from . import ipcalc
-except ImportError as e:
-    msg = '{0}, get a copy from https://github.com/tehmaze/ipcalc '.format(e)
-    raise ImportError(msg)
-
-
-# https://github.com/nullpass/fileasobj/blob/master/__init__.py
-try:
-    from core.fileasobj import FileAsObj
-except ImportError as e:
-    msg = '{0}, get a copy from https://github.com/nullpass/fileasobj '.format(e)
-    raise ImportError(msg)
+import ipcalc
+from fileasobj import FileAsObj
 
 
 # base templates for files we create
